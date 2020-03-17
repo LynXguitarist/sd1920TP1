@@ -27,7 +27,8 @@ public class UserServer {
 			
 		ResourceConfig config = new ResourceConfig();
 		config.register(UserResource.class);
-
+		
+		//If rest and soap
 		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 		JdkHttpServerFactory.createHttpServer( URI.create(serverURI), config);
 	

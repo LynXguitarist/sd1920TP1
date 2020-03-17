@@ -26,7 +26,7 @@ public class DeleteUserRest {
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
-
+		
 		// You should replace this by the discovery class developed last week
 		System.out.println("Provide the server url:");
 		String serverUrl = sc.nextLine();
