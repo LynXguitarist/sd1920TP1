@@ -25,6 +25,7 @@ public class DeleteUserRest {
 	public static final int REPLY_TIMEOUT = 600;
 
 	public static void main(String[] args) {
+		
 		Scanner sc = new Scanner(System.in);
 		
 		// You should replace this by the discovery class developed last week
