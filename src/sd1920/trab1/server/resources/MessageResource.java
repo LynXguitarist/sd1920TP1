@@ -16,30 +16,74 @@ import javax.ws.rs.core.Response.Status;
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
 import sd1920.trab1.api.rest.MessageService;
+import sd1920.trab1.clients.utils.MessageUtills;
 
 @Singleton
 public class MessageResource implements MessageService {
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
-	private final Map<String, Set<Long>> userInbox = new HashMap<String, Set<Long>>();
+	private final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
+	private final Map<String, User> allusers = UserResource.allusers;// MAYBE?
+
+	private Random randomNumberGenerator;
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
 
 	public MessageResource() {
-
+		this.randomNumberGenerator = new Random(System.currentTimeMillis());
 	}
 
 	@Override
 	public long postMessage(String pwd, Message msg) {
-		
-		//verificar a pwd neste if?
-		if (msg.getSender() == null || msg.getDestination() == null || msg.getDestination().size() == 0) {
+
+		String sender_name = msg.getSender();
+		if (sender_name.contains("@"))// if is a domain, gets the name of sender
+			sender_name.substring(0, sender_name.indexOf('@'));
+
+		User sender = allusers.get(sender_name);
+		Log.info("Received request to register a new message (Sender: " + msg.getSender() + "; Subject: "
+				+ msg.getSubject() + ")");
+
+		if (sender == null || !pwd.equals(sender.getPwd())) {
+			Log.info("Message was rejected due to sender not existing or wrong password");
+			throw new WebApplicationException(Status.FORBIDDEN);
+		} else if (msg.getSender() == null || msg.getDestination() == null || msg.getDestination().size() == 0) {
 			Log.info("Message was rejected due to lack of recepients.");
-			throw new WebApplicationException(Status.CONFLICT);
+			throw new WebApplicationException(Status.CONFLICT); // Check if message is valid, if not return HTTP //
+																// CONFLICT (409)
 		}
-	
-		
-		return 0;
+
+		long newID = 0;
+		synchronized (this) {
+			// Generate a new id for the message, that is not in use yet
+			newID = Math.abs(randomNumberGenerator.nextLong());
+			while (allMessages.containsKey(newID)) {
+				newID = Math.abs(randomNumberGenerator.nextLong());
+			}
+			String email = sender.getName() + "@" + sender.getDomain();
+			String new_sender = sender.getDisplayName() + " <" + email + ">";
+			msg.setSender(new_sender);
+			// Add the message to the global list of messages
+			allMessages.put(newID, msg);
+		}
+
+		Log.info("Created new message with id: " + newID);
+		MessageUtills.printMessage(allMessages.get(newID));
+
+		synchronized (this) {
+			// Add the message (identifier) to the inbox of each recipient
+			for (String recipient : msg.getDestination()) {
+				if (!userInboxs.containsKey(recipient)) {
+					userInboxs.put(recipient, new HashSet<Long>());
+				}
+				userInboxs.get(recipient).add(newID);
+			}
+		}
+
+		// Return the id of the registered message to the client (in the body of a HTTP
+		// Response with 200)
+		Log.info("Recorded message with identifier: " + newID);
+		return newID;
 	}
 
 	@Override

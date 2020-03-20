@@ -13,7 +13,7 @@ import sd1920.trab1.clients.utils.UserUtills;
 
 public class UserResource implements UserService {
 
-	private final Map<String, User> allusers = new HashMap<>();
+	protected static final Map<String, User> allusers = new HashMap<>();
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
 

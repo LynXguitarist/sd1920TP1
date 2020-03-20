@@ -22,7 +22,7 @@ public interface MessageService {
 	 * Posts a new message to the server, associating it to the inbox of every
 	 * individual destination. An outgoing message should be modified before
 	 * delivering it, by assigning an ID, and by changing the sender to be in the
-	 * format "display name <name@domain>", with display name the display name
+	 * format "displayname <name@domain>", with display name the display name
 	 * associated with a user. NOTE: there might be some destinations that are not
 	 * from the local domain (see grading for how addressing this feature is
 	 * valued).
