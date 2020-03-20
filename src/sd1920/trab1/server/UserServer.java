@@ -12,7 +12,7 @@ import sd1920.trab1.server.resources.UserResource;
 
 public class UserServer {
 
-	private static Logger Log = Logger.getLogger(MessageServer.class.getName());
+	private static Logger Log = Logger.getLogger(UserServer.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -20,7 +20,7 @@ public class UserServer {
 	}
 	
 	public static final int PORT = 8080;
-	public static final String SERVICE = "MessageService";
+	public static final String SERVICE = "UserService";
 	
 	public static void main(String[] args) throws UnknownHostException {
 		String ip = InetAddress.getLocalHost().getHostAddress();
