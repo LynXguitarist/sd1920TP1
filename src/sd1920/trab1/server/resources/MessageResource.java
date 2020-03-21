@@ -87,15 +87,57 @@ public class MessageResource implements MessageService {
 	}
 
 	@Override
+
+	// FALTA QUALQUER COISA MAS NAO TOU A VER O QUE
 	public Message getMessage(String user, long mid, String pwd) {
-		// TODO Auto-generated method stub
-		return null;
+
+		User sender = allusers.get(user);
+
+		if (sender == null || !pwd.equals(sender.getPwd())) {
+			Log.info("Message was rejected due to sender not existing or wrong password");
+			throw new WebApplicationException(Status.FORBIDDEN);
+		}
+
+		Log.info("Received request for message with id: " + mid + ".");
+		Message m = null;
+
+		synchronized (this) {
+			m = allMessages.get(mid);
+		}
+
+		if (m == null) {
+			Log.info("Requested message does not exist.");
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+
+		Log.info("Returning requested message to user.");
+		return m;
 	}
 
+	//nao pus o primeiro sync(tp3) por que tinha a
+	//ver com o user==null supostamente da 403 aqui
 	@Override
 	public List<Long> getMessages(String user, String pwd) {
-		// TODO Auto-generated method stub
-		return null;
+		User sender = allusers.get(user);
+		List<Long> messagesIds = new ArrayList<Long>();
+		
+		if (sender == null || !pwd.equals(sender.getPwd())) {
+			Log.info("Message was rejected due to sender not existing or wrong password");
+			throw new WebApplicationException(Status.FORBIDDEN);
+		}
+		
+		//qualquer coisa mal feita aqui
+		Log.info("Collecting all messages in server for user " + user);
+		synchronized (this) {
+			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
+			for(Long l: mids) {
+				Log.info("Adding message with id: " + l + ".");//nao sei se precisa de tar aqui?
+				messagesIds.add(l);//nao sei se ta certo
+			}
+		
+		}
+		
+		return messagesIds;
 	}
 
 	@Override
