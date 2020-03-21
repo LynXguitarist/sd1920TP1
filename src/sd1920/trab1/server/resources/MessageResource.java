@@ -114,41 +114,66 @@ public class MessageResource implements MessageService {
 		return m;
 	}
 
-	//nao pus o primeiro sync(tp3) por que tinha a
-	//ver com o user==null supostamente da 403 aqui
+	// nao pus o primeiro sync(tp3) por que tinha a
+	// ver com o user==null supostamente da 403 aqui
 	@Override
 	public List<Long> getMessages(String user, String pwd) {
 		User sender = allusers.get(user);
 		List<Long> messagesIds = new ArrayList<Long>();
-		
+
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Message was rejected due to sender not existing or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
-		
-		//qualquer coisa mal feita aqui
+
+		// qualquer coisa mal feita aqui
 		Log.info("Collecting all messages in server for user " + user);
 		synchronized (this) {
 			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
-			for(Long l: mids) {
-				Log.info("Adding message with id: " + l + ".");//nao sei se precisa de tar aqui?
-				messagesIds.add(l);//nao sei se ta certo
+			for (Long l : mids) {
+				Log.info("Adding message with id: " + l + ".");// nao sei se precisa de tar aqui?
+				messagesIds.add(l);// nao sei se ta certo
 			}
-		
+
 		}
-		
+
 		return messagesIds;
 	}
 
+	//HMMMMMMMMMMMMMMM nao me parece...
 	@Override
 	public void removeFromUserInbox(String user, long mid, String pwd) {
-		// TODO Auto-generated method stub
+		User sender = allusers.get(user); // user em allusers
+		if (sender == null || !pwd.equals(sender.getPwd())) {
+			Log.info("Sender does not exist or wrong password");
+			throw new WebApplicationException(Status.FORBIDDEN);
+		}
+		Log.info("Removing message with id " + mid + " from the user " + user + " inbox");
+		synchronized (this) {
+			if (!allMessages.containsKey(mid)) {
+				Log.info("Message with id: " + mid + " doen't exist");
+				throw new WebApplicationException(Status.NOT_FOUND);
+			} else {
+				Log.info("Deleting message with id: " + mid);
+				allMessages.remove(mid);
+			}
+
+		}
 
 	}
 
+	// MAYBE?
 	@Override
 	public void deleteMessage(String user, long mid, String pwd) {
-		// TODO Auto-generated method stub
+
+		User sender = allusers.get(user); // user em allusers
+		if (sender == null || !pwd.equals(sender.getPwd())) {
+			Log.info("Sender does not exist or wrong password");
+			throw new WebApplicationException(Status.FORBIDDEN);
+		}
+		Log.info("Received request to delete message with id: " + mid + ".");
+		Log.info("Deleting message with id: " + mid);
+		allMessages.remove(mid);
 
 	}
 
