@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -87,8 +88,6 @@ public class MessageResource implements MessageService {
 	}
 
 	@Override
-
-	// FALTA QUALQUER COISA MAS NAO TOU A VER O QUE
 	public Message getMessage(String user, long mid, String pwd) {
 
 		User sender = allusers.get(user);
@@ -126,21 +125,19 @@ public class MessageResource implements MessageService {
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 
-		// qualquer coisa mal feita aqui
 		Log.info("Collecting all messages in server for user " + user);
 		synchronized (this) {
 			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
 			for (Long l : mids) {
-				Log.info("Adding message with id: " + l + ".");// nao sei se precisa de tar aqui?
-				messagesIds.add(l);// nao sei se ta certo
+				Log.info("Adding message with id: " + l + ".");
+				messagesIds.add(l);
 			}
 
 		}
-
+		Log.info("Returning the list of messages.");
 		return messagesIds;
 	}
 
-	//HMMMMMMMMMMMMMMM nao me parece...
 	@Override
 	public void removeFromUserInbox(String user, long mid, String pwd) {
 		User sender = allusers.get(user); // user em allusers
@@ -150,19 +147,16 @@ public class MessageResource implements MessageService {
 		}
 		Log.info("Removing message with id " + mid + " from the user " + user + " inbox");
 		synchronized (this) {
-			if (!allMessages.containsKey(mid)) {
+			if (!allMessages.containsKey(mid) || !userInboxs.get(user).contains(mid)) {
 				Log.info("Message with id: " + mid + " doen't exist");
 				throw new WebApplicationException(Status.NOT_FOUND);
 			} else {
 				Log.info("Deleting message with id: " + mid);
-				allMessages.remove(mid);
+				userInboxs.get(user).remove(mid);
 			}
-
 		}
-
 	}
 
-	// MAYBE?
 	@Override
 	public void deleteMessage(String user, long mid, String pwd) {
 
@@ -173,8 +167,10 @@ public class MessageResource implements MessageService {
 		}
 		Log.info("Received request to delete message with id: " + mid + ".");
 		Log.info("Deleting message with id: " + mid);
+		for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
+			entry.getValue().remove(mid);
+		}
 		allMessages.remove(mid);
-
 	}
 
 }
