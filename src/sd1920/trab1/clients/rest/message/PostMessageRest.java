@@ -1,8 +1,6 @@
 package sd1920.trab1.clients.rest.message;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -19,11 +17,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
 import sd1920.trab1.api.Message;
-import sd1920.trab1.api.User;
 import sd1920.trab1.api.rest.MessageService;
-import sd1920.trab1.clients.utils.MessageUtills;
-import sd1920.trab1.server.resources.MessageResource;
-import sd1920.trab1.server.resources.UserResource;
 
 public class PostMessageRest {
 
@@ -32,7 +26,6 @@ public class PostMessageRest {
 	public final static int CONNECTION_TIMEOUT = 1000;
 	public final static int REPLY_TIMEOUT = 600;
 
-	private final Map<String, User> allusers = UserResource.getAllusers();
 	public static void main(String[] args) {
 		
 		
@@ -76,8 +69,6 @@ Scanner sc = new Scanner(System.in);
 		
 		Message m = new Message(sender, destinations, subject, contents.getBytes());
 	
-		//User u = allusers.
-		
 		System.out.println("Sending request to server.");
 		
 		ClientConfig config = new ClientConfig();
@@ -89,7 +80,6 @@ Scanner sc = new Scanner(System.in);
 		
 		WebTarget target = client.target( serverUrl ).path( MessageService.PATH );
 		
-		//fazer em todas
 		if (pwd != null)
 			target = target.queryParam("pwd", pwd);
 		

@@ -23,7 +23,7 @@ import sd1920.trab1.clients.utils.MessageUtills;
 public class MessageResource implements MessageService {
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
-	private final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
+	protected static final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
 	private final Map<String, User> allusers = UserResource.getAllusers();// MAYBE?
 
 	private Random randomNumberGenerator;
@@ -171,6 +171,10 @@ public class MessageResource implements MessageService {
 			entry.getValue().remove(mid);
 		}
 		allMessages.remove(mid);
+	}
+
+	public static Map<String, Set<Long>> getUserInbox() {
+		return userInboxs;
 	}
 
 }

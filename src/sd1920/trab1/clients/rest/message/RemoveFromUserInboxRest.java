@@ -1,12 +1,10 @@
 package sd1920.trab1.clients.rest.message;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -15,9 +13,7 @@ import javax.ws.rs.core.Response.Status;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
-import sd1920.trab1.api.Message;
 import sd1920.trab1.api.rest.MessageService;
-import sd1920.trab1.clients.utils.MessageUtills;
 
 public class RemoveFromUserInboxRest {
 
@@ -32,9 +28,7 @@ public class RemoveFromUserInboxRest {
 		// You should replace this by the discovery class developed last week
 		System.out.println("Provide the server url:");
 		String serverUrl = sc.nextLine();
-		//
-		
-		
+
 		System.out.println("Provide user identifier:");
 		String user = sc.nextLine();
 
@@ -45,31 +39,48 @@ public class RemoveFromUserInboxRest {
 		String pwd = sc.nextLine();
 		if (pwd.equalsIgnoreCase(""))
 			pwd = null;
-		
+
 		sc.close();
 
 		System.out.println("Sending request to server.");
 
 		ClientConfig config = new ClientConfig();
+		// How much time until timeout on opening the TCP connection to the server
+		config.property(ClientProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
+		// How much time to wait for the reply of the server after sending the request
+		config.property(ClientProperties.READ_TIMEOUT, REPLY_TIMEOUT);
 		Client client = ClientBuilder.newClient(config);
 
-		WebTarget target = client.target(serverUrl).path(MessageService.PATH);
-
-		target = target.queryParam("user", user);
+		WebTarget target = client.target(serverUrl).path(MessageService.PATH + "/mbox");
 
 		if (pwd != null)
 			target = target.queryParam("pwd", pwd);
-		
-		Response r = target.path(mid).request().accept(MediaType.APPLICATION_JSON)
-				.put(Entity.entity(mid, MediaType.APPLICATION_JSON));
 
-		if (r.getStatus() == Status.OK.getStatusCode()) {
-			System.out.println("Success: message with id: " + mid + " removed from " + user + "'s inbox");
-			// String content = new String(r.readEntity(byte[].class));
-			// System.out.println(content);
-		} else
-			System.out.println("Error, HTTP error status: " + r.getStatus());
+		short retries = 0;
+		boolean success = false;
 
+		while (!success && retries < MAX_RETRIES) {
+			try {
+				Response r = target.path(user).path(mid).request().accept(MediaType.APPLICATION_JSON).delete();
+
+				if (r.getStatus() == Status.OK.getStatusCode()) {
+					System.out.println("Success: message with id: " + mid + " removed from " + user + "'s inbox");
+				} else
+					System.out.println("Error, HTTP error status: " + r.getStatus());
+
+				success = true;
+			} catch (ProcessingException pe) { // Error in communication with server
+				System.out.println("Timeout occurred.");
+				pe.printStackTrace(); // Could be removed
+				retries++;
+				try {
+					Thread.sleep(RETRY_PERIOD); // wait until attempting again.
+				} catch (InterruptedException e) {
+					// Nothing to be done here, if this happens we will just retry sooner.
+				}
+				System.out.println("Retrying to execute request.");
+			}
+		}
 	}
 
 }

@@ -2,6 +2,7 @@ package sd1920.trab1.server.resources;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ws.rs.WebApplicationException;
@@ -14,6 +15,7 @@ import sd1920.trab1.clients.utils.UserUtills;
 public class UserResource implements UserService {
 
 	private static final Map<String, User> allusers = new HashMap<>();
+	private static Map<String, Set<Long>>userInbox = MessageResource.getUserInbox();
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
 
@@ -35,7 +37,7 @@ public class UserResource implements UserService {
 
 		Log.info("Creating user.");
 		synchronized (this) {
-			getAllusers().put(user.getName(), user);
+			allusers.put(user.getName(), user);
 		}
 		Log.info("Created new user with domain: " + user.getDomain());
 		UserUtills.printUser(user);
@@ -49,8 +51,8 @@ public class UserResource implements UserService {
 		String user_pwd = null;
 
 		synchronized (this) {
-			user = getAllusers().get(name);
-			user_pwd = getAllusers().get(name).getPwd();
+			user = allusers.get(name);
+			user_pwd = allusers.get(name).getPwd();
 		}
 
 		if (user == null || user_pwd != pwd) {// sees if the user exists or if the pwd is correct
@@ -59,7 +61,7 @@ public class UserResource implements UserService {
 		}
 
 		Log.info("Returning user with name : " + name);
-		return getAllusers().get(name);
+		return allusers.get(name);
 	}
 
 	@Override
@@ -71,10 +73,10 @@ public class UserResource implements UserService {
 		String old_domain = null;
 
 		synchronized (this) {
-			old_user = getAllusers().get(name);
-			old_pwd = getAllusers().get(name).getPwd();
-			old_displayName = getAllusers().get(name).getDisplayName();
-			old_domain = getAllusers().get(name).getDomain();
+			old_user = allusers.get(name);
+			old_pwd = allusers.get(name).getPwd();
+			old_displayName = allusers.get(name).getDisplayName();
+			old_domain = allusers.get(name).getDomain();
 		}
 
 		if (old_user == null || old_pwd != pwd) {// sees if the user exists or if the pwd is correct
@@ -96,12 +98,12 @@ public class UserResource implements UserService {
 		Log.info("Updating user " + name);
 
 		synchronized (this) {
-			getAllusers().put(name, new User(name, new_pwd, new_domain));
-			getAllusers().get(name).setDisplayName(new_displayName);
+			allusers.put(name, new User(name, new_pwd, new_domain));
+			allusers.get(name).setDisplayName(new_displayName);
 		}
 
 		Log.info("Returning user " + name);
-		return getAllusers().get(name);
+		return allusers.get(name);
 	}
 
 	@Override
@@ -111,8 +113,8 @@ public class UserResource implements UserService {
 		String user_pwd = null;
 
 		synchronized (this) {
-			user_deleted = getAllusers().get(user);
-			user_pwd = getAllusers().get(user).getPwd();
+			user_deleted = allusers.get(user);
+			user_pwd = allusers.get(user).getPwd();
 		}
 
 		if (user_deleted == null || user_pwd != pwd) {// sees if the user exists or if the pwd is correct
@@ -123,7 +125,8 @@ public class UserResource implements UserService {
 		Log.info("Deleting user " + user);
 
 		synchronized (this) {
-			getAllusers().remove(user);
+			allusers.remove(user);
+			userInbox.remove(user);
 		}
 
 		Log.info("Returning deleted user " + user);
