@@ -24,7 +24,7 @@ public class MessageResource implements MessageService {
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
 	private final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
-	private final Map<String, User> allusers = UserResource.allusers;// MAYBE?
+	private final Map<String, User> allusers = UserResource.getAllusers();// MAYBE?
 
 	private Random randomNumberGenerator;
 
