@@ -1,5 +1,6 @@
 package sd1920.trab1.clients.rest.message;
 
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import javax.ws.rs.ProcessingException;
@@ -14,19 +15,22 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
 import sd1920.trab1.api.rest.MessageService;
+import sd1920.trab1.discovery.Discovery;
 
 public class DeleteMessageRest {
 	public final static int MAX_RETRIES = 3;
 	public final static long RETRY_PERIOD = 1000;
 	public final static int CONNECTION_TIMEOUT = 1000;
 	public final static int REPLY_TIMEOUT = 600;
+	
+	private static final String serviceName= "MessageService";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws UnknownHostException {
 		Scanner sc = new Scanner(System.in);
 
-		// You should replace this by the discovery class developed last week
-		System.out.println("Provide the server url:");
-		String serverUrl = sc.nextLine();
+		/*System.out.println("Provide the server url:");
+		String serverUrl = sc.nextLine();*/
+		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();
 
 		System.out.println("Provide the user:");
 		String user = sc.nextLine();

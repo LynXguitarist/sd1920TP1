@@ -15,7 +15,7 @@ import sd1920.trab1.clients.utils.UserUtills;
 public class UserResource implements UserService {
 
 	private static final Map<String, User> allusers = new HashMap<>();
-	private static Map<String, Set<Long>>userInbox = MessageResource.getUserInbox();
+	private static Map<String, Set<Long>> userInbox = MessageResource.getUserInbox();
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
 
@@ -67,38 +67,30 @@ public class UserResource implements UserService {
 	@Override
 	public User updateUser(String name, String pwd, User user) {
 		Log.info("Received request to update user: " + name);
-		User old_user = null;
-		String old_pwd = null;
-		String old_displayName = null;
-		String old_domain = null;
 
-		synchronized (this) {
-			old_user = allusers.get(name);
-			old_pwd = allusers.get(name).getPwd();
-			old_displayName = allusers.get(name).getDisplayName();
-			old_domain = allusers.get(name).getDomain();
-		}
-
-		if (old_user == null || old_pwd != pwd) {// sees if the user exists or if the pwd is correct
+		if (allusers.get(name) == null) {// sees if the user exists
 			Log.info("User doesn't exist.");
+			throw new WebApplicationException(Status.CONFLICT);
+		} else if (allusers.get(name).getPwd() != pwd) {// sees if the pwd is correct
+			Log.info("Wrong password.");
 			throw new WebApplicationException(Status.CONFLICT);
 		}
 
 		String new_pwd = user.getPwd();
 		String new_displayName = user.getDisplayName();
-		String new_domain = user.getDomain();
+		String domain = user.getDomain();
 
-		if (new_pwd == null)
-			new_pwd = old_pwd;
-		if (new_displayName == null)
-			new_displayName = old_displayName;
-		if (new_domain == null)
-			new_domain = old_domain;
+		synchronized (this) {
+			if (new_pwd == null)
+				new_pwd = allusers.get(name).getPwd();
+			if (new_displayName == null)
+				new_displayName = allusers.get(name).getDisplayName();
+		}
 
 		Log.info("Updating user " + name);
 
 		synchronized (this) {
-			allusers.put(name, new User(name, new_pwd, new_domain));
+			allusers.put(name, new User(name, new_pwd, domain));
 			allusers.get(name).setDisplayName(new_displayName);
 		}
 

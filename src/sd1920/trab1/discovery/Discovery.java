@@ -57,7 +57,7 @@ public class Discovery {
 	 * @param serviceURI  an uri string - representing the contact endpoint of the
 	 *                    service being announced
 	 */
-	Discovery(InetSocketAddress addr, String serviceName, String serviceURI) {
+	public Discovery(InetSocketAddress addr, String serviceName, String serviceURI) {
 		this.addr = addr;
 		this.serviceName = serviceName;
 		this.serviceURI = serviceURI;
@@ -101,7 +101,8 @@ public class Discovery {
 							System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
 									pkt.getAddress().getHostAddress(), msg);
 							knownUrisOf(msgElems[1]);
-							System.out.println(knownUrisOf(msgElems[1])[0]);
+							for (int i = 0; i < knownUrisOf(msgElems[1]).length; i++)
+								System.out.println(knownUrisOf(msgElems[1])[i]);
 						}
 					} catch (IOException e) {
 					}
@@ -119,7 +120,7 @@ public class Discovery {
 	 * @return an array of URI with the service instances discovered.
 	 * 
 	 */
-	public URI[] knownUrisOf(String serviceName) {
+	public static URI[] knownUrisOf(String serviceName) {
 		Map<URI, Long> results = new HashMap<>();
 		results.put(URI.create(serviceName), System.currentTimeMillis());
 		return results.keySet().toArray(new URI[0]);

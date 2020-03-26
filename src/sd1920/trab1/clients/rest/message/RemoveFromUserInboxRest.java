@@ -14,6 +14,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
 import sd1920.trab1.api.rest.MessageService;
+import sd1920.trab1.discovery.Discovery;
 
 public class RemoveFromUserInboxRest {
 
@@ -22,12 +23,16 @@ public class RemoveFromUserInboxRest {
 	public final static int CONNECTION_TIMEOUT = 1000;
 	public final static int REPLY_TIMEOUT = 600;
 
+	private static final String serviceName = "MessageService";
+
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 
-		// You should replace this by the discovery class developed last week
-		System.out.println("Provide the server url:");
-		String serverUrl = sc.nextLine();
+		/*
+		 * System.out.println("Provide the server url:"); String serverUrl =
+		 * sc.nextLine();
+		 */
+		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();// ?
 
 		System.out.println("Provide user identifier:");
 		String user = sc.nextLine();
