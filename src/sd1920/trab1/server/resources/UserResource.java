@@ -31,12 +31,12 @@ public class UserResource implements UserService {
 	public String postUser(User user) {
 
 		Log.info("Received request to register the user " + user.getName());
-		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();
+		String serverUrl = Discovery.knownUrisOf(serviceName)[0].toString().trim();
 
-		Log.info("Connecting to : " + serverUrl);
-
-		if (user.getDomain() != serverUrl) {
+		if (!user.getDomain().equals(serverUrl)) {
 			Log.info("User domain is different then the server domain.");
+			Log.info("ServerUrl Requested = "+user.getDomain());
+			Log.info("Serverurl received = "+serverUrl);
 			throw new WebApplicationException(Status.FORBIDDEN);
 		} else if (user.getName() == null || user.getDomain() == null || user.getPwd() == null) {
 			Log.info("Pwd or domain or username is null.");

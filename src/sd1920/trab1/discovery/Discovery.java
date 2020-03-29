@@ -2,12 +2,12 @@ package sd1920.trab1.discovery;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 /**
@@ -47,6 +47,8 @@ public class Discovery {
 
 	// Used separate the two fields that make up a service announcement.
 	private static final String DELIMITER = "\t";
+
+	static Map<URI, Long> results = new HashMap<>();
 
 	private InetSocketAddress addr;
 	private String serviceName;
@@ -100,9 +102,7 @@ public class Discovery {
 						if (msgElems.length == 2) { // periodic announcement
 							System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
 									pkt.getAddress().getHostAddress(), msg);
-							knownUrisOf(msgElems[1]);
-							for (int i = 0; i < knownUrisOf(msgElems[1]).length; i++)
-								System.out.println(knownUrisOf(msgElems[1])[i]);
+							results.put(URI.create(msgElems[1]), System.currentTimeMillis());
 						}
 					} catch (IOException e) {
 					}
@@ -121,15 +121,13 @@ public class Discovery {
 	 * 
 	 */
 	public static URI[] knownUrisOf(String serviceName) {
-		Map<URI, Long> results = new HashMap<>();
-		results.put(URI.create(serviceName), System.currentTimeMillis());
-		return results.keySet().toArray(new URI[0]);
+		URI[] uris = new URI[results.size()];
+		int counter = 0;
+		for (Entry<URI, Long> entry : results.entrySet()) {
+			uris[counter++] = entry.getKey();
+		}
+		
+		return uris;
 	}
 
-	// Main just for testing purposes
-	public static void main(String[] args) throws Exception {
-		Discovery discovery = new Discovery(DISCOVERY_ADDR, "test",
-				"http://" + InetAddress.getLocalHost().getHostAddress());
-		discovery.start();
-	}
 }
