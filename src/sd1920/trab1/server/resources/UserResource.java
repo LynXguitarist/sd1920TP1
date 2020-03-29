@@ -32,7 +32,7 @@ public class UserResource implements UserService {
 
 		Log.info("Received request to register the user " + user.getName());
 
-		if (user.getName().equals("") || user.getDomain().equals("") || user.getPwd().equals("")
+		if (user.getName().equals("") || user.getDomain() == null || user.getPwd().equals("")
 				|| allusers.get(user.getName()) != null) {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
