@@ -11,6 +11,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import sd1920.trab1.discovery.Discovery;
 import sd1920.trab1.server.resources.MessageResource;
+import sd1920.trab1.server.resources.UserResource;
 
 public class MessageRestServer {
 
@@ -31,6 +32,7 @@ public class MessageRestServer {
 
 		ResourceConfig config = new ResourceConfig();
 		config.register(MessageResource.class);
+		config.register(UserResource.class);
 
 		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 		JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
