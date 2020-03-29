@@ -10,12 +10,14 @@ import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import sd1920.trab1.discovery.Discovery;
-import sd1920.trab1.discovery.DiscoveryDep;
+import sd1920.trab1.discovery.Discovery;
 import sd1920.trab1.server.resources.UserResource;
 
 public class UserRestServer {
 
 	private static Logger Log = Logger.getLogger(UserRestServer.class.getName());
+	
+	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -36,7 +38,8 @@ public class UserRestServer {
 
 		Log.info(String.format("%s Server ready @ %s\n", SERVICE, serverURI));
 
-		Discovery.announce(SERVICE, serverURI);
+		Discovery discovery = new Discovery(DISCOVERY_ADDR, SERVICE, serverURI);
+		discovery.start();
 	}
 
 }

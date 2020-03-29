@@ -1,6 +1,5 @@
 package sd1920.trab1.clients.rest.users;
 
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import javax.ws.rs.ProcessingException;
@@ -28,12 +27,12 @@ public class PostUserRest {
 
 	private static final String serviceName = "UserService";
 
-	public static void main(String[] args) throws UnknownHostException {
+	public static void main(String[] args) {
 
 		Scanner sc = new Scanner(System.in);
 
 		System.out.println("Provide the server url:");
-		String serverUrl = Discovery.findUrisOf(serviceName, MAX_RETRIES)[0].getPath();
+		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();
 
 		System.out.println("Provide username:");// username
 		String username = sc.nextLine();
@@ -44,9 +43,13 @@ public class PostUserRest {
 		System.out.println("Provide user domain:");// domain
 		String domain = sc.nextLine();
 
+		System.out.println("Provide user displayName:");
+		String displayName = sc.nextLine();
+
 		sc.close();
 
 		User user = new User(username, pwd, domain);
+		user.setDisplayName(displayName);
 
 		System.out.println("Sending request to server.");
 
