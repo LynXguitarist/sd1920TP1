@@ -54,22 +54,27 @@ public class UserResource implements UserService {
 
 	@Override
 	public User getUser(String name, String pwd) {
-		
+
 		Log.info("Received request to return user with username: " + name);
 		User user = null;
-		String user_pwd = null;
+		String user_pwd = "";
 
 		synchronized (this) {
 			user = allusers.get(name);
-			if(user != null)
+			if (user != null)
 				user_pwd = user.getPwd();
 		}
 
-		if (user == null || !user_pwd.equals(pwd)) {// sees if the user exists or if the pwd is correct
+		if (user == null && !user_pwd.equals(pwd)) {// sees if the user exists or if the pwd is correct
 			Log.info("User doesn't exist.");
-			Log.info("user password = "+ user_pwd+" pwd = "+pwd);
-			Log.info("User = "+ user);
+			Log.info("user password = " + user_pwd + " pwd = " + pwd);
+			Log.info("User = " + user);
 			throw new WebApplicationException(Status.CONFLICT);
+		} else if (user == null || !user_pwd.equals(pwd)) {// sees if the user exists or if the pwd is correct
+			Log.info("User doesn't exist.");
+			Log.info("user password = " + user_pwd + " pwd = " + pwd);
+			Log.info("User = " + user);
+			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 
 		Log.info("Returning user with name : " + name);
@@ -80,23 +85,25 @@ public class UserResource implements UserService {
 	public User updateUser(String name, String pwd, User user) {
 		Log.info("Received request to update user: " + name);
 
-		if (allusers.get(name) == null) {// sees if the user exists
+		User old_user = allusers.get(name);
+
+		if (old_user == null) {// sees if the user exists
 			Log.info("User doesn't exist.");
-			throw new WebApplicationException(Status.CONFLICT);
-		} else if (allusers.get(name).getPwd() != pwd) {// sees if the pwd is correct
+			throw new WebApplicationException(Status.FORBIDDEN);
+		} else if (!old_user.getPwd().equals(pwd)) {// sees if the pwd is correct
 			Log.info("Wrong password.");
-			throw new WebApplicationException(Status.CONFLICT);
+			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 
 		String new_pwd = user.getPwd();
 		String new_displayName = user.getDisplayName();
-		String domain = user.getDomain();
+		String domain = old_user.getDomain();
 
 		synchronized (this) {
 			if (new_pwd == null)
-				new_pwd = allusers.get(name).getPwd();
+				new_pwd = old_user.getPwd();
 			if (new_displayName == null)
-				new_displayName = allusers.get(name).getDisplayName();
+				new_displayName = old_user.getDisplayName();
 		}
 
 		Log.info("Updating user " + name);
@@ -113,17 +120,18 @@ public class UserResource implements UserService {
 	@Override
 	public User deleteUser(String user, String pwd) {
 		Log.info("Received request to delete user " + user);
-		User user_deleted = null;
-		String user_pwd = null;
+		String user_pwd = "";
+		User old_user = null;
 
 		synchronized (this) {
-			user_deleted = allusers.get(user);
-			user_pwd = allusers.get(user).getPwd();
+			old_user = allusers.get(user);
+			if (old_user != null)
+				user_pwd = old_user.getPwd();
 		}
 
-		if (user_deleted == null || user_pwd != pwd) {// sees if the user exists or if the pwd is correct
+		if (old_user == null || !user_pwd.equals(pwd)) {// sees if the user exists or if the pwd is correct
 			Log.info("User dones't exist.");
-			throw new WebApplicationException(Status.CONFLICT);
+			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 
 		Log.info("Deleting user " + user);
@@ -134,7 +142,7 @@ public class UserResource implements UserService {
 		}
 
 		Log.info("Returning deleted user " + user);
-		return user_deleted;
+		return old_user;
 	}
 
 	public static Map<String, User> getAllusers() {
