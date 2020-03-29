@@ -31,12 +31,9 @@ public class UserResource implements UserService {
 	public String postUser(User user) {
 
 		Log.info("Received request to register the user " + user.getName());
-		String serverUrl = Discovery.knownUrisOf(user.getDomain())[0].toString().trim();
 
-		if (!user.getDomain().equals(serverUrl)) {
+		if (Discovery.knownUrisOf(user.getDomain()).length == 0) {
 			Log.info("User domain is different then the server domain.");
-			Log.info("ServerUrl Requested = "+user.getDomain());
-			Log.info("Serverurl received = "+serverUrl);
 			throw new WebApplicationException(Status.FORBIDDEN);
 		} else if (user.getName() == null || user.getDomain() == null || user.getPwd() == null) {
 			Log.info("Pwd or domain or username is null.");
@@ -51,7 +48,7 @@ public class UserResource implements UserService {
 		Log.info("Created new user with domain: " + user.getDomain());
 		UserUtills.printUser(user);
 
-		String name_domain = user.getName()+"@"+user.getDomain();
+		String name_domain = user.getName() + "@" + user.getDomain();
 		return name_domain;
 	}
 

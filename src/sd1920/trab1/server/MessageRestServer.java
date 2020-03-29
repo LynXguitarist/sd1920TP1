@@ -41,7 +41,6 @@ public class MessageRestServer {
 		
 		Discovery discovery = new Discovery(DISCOVERY_ADDR, SERVICE, serverURI);
 		discovery.start();
-		
 
 	}
 
