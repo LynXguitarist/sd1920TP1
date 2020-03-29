@@ -65,6 +65,8 @@ public class UserResource implements UserService {
 
 		if (user == null || user_pwd != pwd) {// sees if the user exists or if the pwd is correct
 			Log.info("User doesn't exist.");
+			Log.info("user password = "+ user_pwd+" pwd = "+pwd);
+			Log.info("User = "+ user);
 			throw new WebApplicationException(Status.CONFLICT);
 		}
 
