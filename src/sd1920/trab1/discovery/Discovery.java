@@ -48,8 +48,6 @@ public class Discovery {
 	// Used separate the two fields that make up a service announcement.
 	private static final String DELIMITER = "\t";
 
-	static Map<URI, Long> results = new HashMap<>();
-
 	private InetSocketAddress addr;
 	private String serviceName;
 	private String serviceURI;
@@ -102,7 +100,7 @@ public class Discovery {
 						if (msgElems.length == 2) { // periodic announcement
 							System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
 									pkt.getAddress().getHostAddress(), msg);
-							results.put(URI.create(msgElems[1]), System.currentTimeMillis());
+							knownUrisOf(msgElems[1]);
 						}
 					} catch (IOException e) {
 					}
@@ -121,13 +119,9 @@ public class Discovery {
 	 * 
 	 */
 	public static URI[] knownUrisOf(String serviceName) {
-		URI[] uris = new URI[results.size()];
-		int counter = 0;
-		for (Entry<URI, Long> entry : results.entrySet()) {
-			uris[counter++] = entry.getKey();
-		}
-		
-		return uris;
+		Map<URI, Long> results = new HashMap<>();
+		results.put(URI.create(serviceName), System.currentTimeMillis());
+		return results.keySet().toArray(new URI[0]);
 	}
 
 }

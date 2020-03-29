@@ -31,7 +31,7 @@ public class UserResource implements UserService {
 	public String postUser(User user) {
 
 		Log.info("Received request to register the user " + user.getName());
-		String serverUrl = Discovery.knownUrisOf(serviceName)[0].toString().trim();
+		String serverUrl = Discovery.knownUrisOf(user.getDomain())[0].toString().trim();
 
 		if (!user.getDomain().equals(serverUrl)) {
 			Log.info("User domain is different then the server domain.");
