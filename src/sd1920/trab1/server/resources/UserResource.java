@@ -32,7 +32,7 @@ public class UserResource implements UserService {
 
 		Log.info("Received request to register the user " + user.getName());
 
-		if (user.getName().isEmpty() || user.getDomain().isEmpty() || user.getPwd().isEmpty()
+		if (IsNullOrEmpty(user.getName()) || IsNullOrEmpty(user.getDomain()) || IsNullOrEmpty(user.getPwd())
 				|| allusers.get(user.getName()) != null) {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
@@ -96,9 +96,9 @@ public class UserResource implements UserService {
 		String domain = old_user.getDomain();
 
 		synchronized (this) {
-			if (new_pwd.equals(""))
+			if (IsNullOrEmpty(new_pwd))
 				new_pwd = old_user.getPwd();
-			if (new_displayName.equals(""))
+			if (IsNullOrEmpty(new_displayName))
 				new_displayName = old_user.getDisplayName();
 		}
 
@@ -143,6 +143,13 @@ public class UserResource implements UserService {
 
 	public static Map<String, User> getAllusers() {
 		return allusers;
+	}
+
+	private boolean IsNullOrEmpty(String string) {
+		if (string == null || string.isEmpty())
+			return true;
+
+		return false;
 	}
 
 }
