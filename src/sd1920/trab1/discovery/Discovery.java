@@ -120,7 +120,9 @@ public class Discovery {
 	 */
 	public static URI[] knownUrisOf(String serviceName) {
 		Map<URI, Long> results = new HashMap<>();
-		results.put(URI.create(serviceName), System.currentTimeMillis());
+		if (!serviceName.contains(" ")) {
+			results.put(URI.create(serviceName), System.currentTimeMillis());
+		}
 		return results.keySet().toArray(new URI[0]);
 	}
 
