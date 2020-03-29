@@ -29,7 +29,7 @@ public class UserRestServer {
 
 	public static void main(String[] args) throws UnknownHostException {
 		String ip = InetAddress.getLocalHost().getHostAddress();
-		System.out.println("Entrou no servidor.server!");
+
 		ResourceConfig config = new ResourceConfig();
 		config.register(UserResource.class);
 

@@ -24,7 +24,7 @@ public class PostUserRest {
 	public static final long RETRY_PERIOD = 1000;
 	public static final int CONNECTION_TIMEOUT = 1000;
 	public static final int REPLY_TIMEOUT = 600;
-
+	
 	private static final String serviceName = "UserService";
 
 	public static void main(String[] args) {
@@ -33,11 +33,9 @@ public class PostUserRest {
 
 		System.out.println("Provide the server url:");
 		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();
-		System.out.println("server = " + serverUrl);
-
+		
 		System.out.println("Provide username:");// username
 		String username = sc.nextLine();
-		System.out.println("Username = " + username);
 
 		System.out.println("Provide user password:");// password
 		String pwd = sc.nextLine();
@@ -61,7 +59,8 @@ public class PostUserRest {
 		// How much time to wait for the reply of the server after sending the request
 		config.property(ClientProperties.READ_TIMEOUT, REPLY_TIMEOUT);
 		Client client = ClientBuilder.newClient(config);
-
+		
+		
 		WebTarget target = client.target(serverUrl).path(UserService.PATH);
 
 		short retries = 0;
