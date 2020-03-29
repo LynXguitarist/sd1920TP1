@@ -35,7 +35,8 @@ public class UserResource implements UserService {
 		if (Discovery.knownUrisOf(user.getDomain()).length == 0) {
 			Log.info("User domain is different then the server domain.");
 			throw new WebApplicationException(Status.FORBIDDEN);
-		} else if (user.getName() == null || user.getDomain() == null || user.getPwd() == null || allusers.get(user.getName()) != null) {
+		} else if (user.getName().equals("") || user.getDomain().equals("") || user.getPwd().equals("")
+				|| allusers.get(user.getName()) != null) {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
 		}
@@ -95,9 +96,9 @@ public class UserResource implements UserService {
 		String domain = old_user.getDomain();
 
 		synchronized (this) {
-			if (new_pwd == null)
+			if (new_pwd.equals(""))
 				new_pwd = old_user.getPwd();
-			if (new_displayName == null)
+			if (new_displayName.equals(""))
 				new_displayName = old_user.getDisplayName();
 		}
 
