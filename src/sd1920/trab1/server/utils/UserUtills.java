@@ -1,4 +1,4 @@
-package sd1920.trab1.clients.utils;
+package sd1920.trab1.server.utils;
 
 import sd1920.trab1.api.User;
 

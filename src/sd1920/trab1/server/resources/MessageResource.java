@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response.Status;
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
 import sd1920.trab1.api.rest.MessageService;
-import sd1920.trab1.clients.utils.MessageUtills;
+import sd1920.trab1.server.utils.MessageUtills;
 
 @Singleton
 public class MessageResource implements MessageService {

@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response.Status;
 import sd1920.trab1.api.User;
 import sd1920.trab1.api.rest.UserService;
 import sd1920.trab1.discovery.Discovery;
+import sd1920.trab1.server.utils.UserUtills;
 
 public class UserResource implements UserService {
 
@@ -18,16 +19,17 @@ public class UserResource implements UserService {
 	private static Map<String, Set<Long>> userInbox = MessageResource.getUserInbox();
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
-	public static final String serviceName = "UserService";
+	
+	public static final String serviceName = "MessageService";
 
 	public UserResource() {
 	}
 
 	@Override
 	public String postUser(User user) {
+		
 		Log.info("Received request to register the user " + user.getName());
 		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();// mudar isto pelo serverUrl
-		System.out.println("servidor, server = " + serverUrl);
 
 		if (user.getDomain() != serverUrl) {
 			Log.info("User domain is different then the server domain.");
@@ -41,8 +43,10 @@ public class UserResource implements UserService {
 		synchronized (this) {
 			allusers.put(user.getName(), user);
 		}
+		
 		Log.info("Created new user with domain: " + user.getDomain());
-		// UserUtills.printUser(user);
+		UserUtills.printUser(user);
+		
 		return user.getDomain();
 	}
 
