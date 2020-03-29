@@ -51,7 +51,8 @@ public class UserResource implements UserService {
 		Log.info("Created new user with domain: " + user.getDomain());
 		UserUtills.printUser(user);
 
-		return user.getDomain();
+		String name_domain = user.getName()+"@"+user.getDomain();
+		return name_domain;
 	}
 
 	@Override
