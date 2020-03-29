@@ -33,9 +33,11 @@ public class PostUserRest {
 
 		System.out.println("Provide the server url:");
 		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();
+		System.out.println("server = " + serverUrl);
 
 		System.out.println("Provide username:");// username
 		String username = sc.nextLine();
+		System.out.println("Username = " + username);
 
 		System.out.println("Provide user password:");// password
 		String pwd = sc.nextLine();

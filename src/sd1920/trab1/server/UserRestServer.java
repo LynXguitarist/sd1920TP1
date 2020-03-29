@@ -16,7 +16,7 @@ import sd1920.trab1.server.resources.UserResource;
 public class UserRestServer {
 
 	private static Logger Log = Logger.getLogger(UserRestServer.class.getName());
-	
+
 	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
 
 	static {
@@ -29,7 +29,7 @@ public class UserRestServer {
 
 	public static void main(String[] args) throws UnknownHostException {
 		String ip = InetAddress.getLocalHost().getHostAddress();
-
+		System.out.println("Entrou no servidor.server!");
 		ResourceConfig config = new ResourceConfig();
 		config.register(UserResource.class);
 
