@@ -35,7 +35,7 @@ public class UserResource implements UserService {
 		if (Discovery.knownUrisOf(user.getDomain()).length == 0) {
 			Log.info("User domain is different then the server domain.");
 			throw new WebApplicationException(Status.FORBIDDEN);
-		} else if (user.getName() == null || user.getDomain() == null || user.getPwd() == null) {
+		} else if (user.getName() == null || user.getDomain() == null || user.getPwd() == null || allusers.get(user.getName()) != null) {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
 		}
