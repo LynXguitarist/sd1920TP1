@@ -1,13 +1,12 @@
 package sd1920.trab1.discovery;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
 /**
@@ -17,13 +16,15 @@ import java.util.logging.Logger;
  * </p>
  * 
  * <p>
- * Servers announce their *name* and contact *uri* at regular intervals. The
- * server actively collects received announcements.
+ * Servers announce their *name* and contact *uri* at regular intervals. Clients
+ * listen for contacts, until they discovery the requested number of service
+ * instances with the given service name.
  * </p>
  * 
  * <p>
  * Service announcements have the following format:
  * </p>
+ * 
  * 
  * <p>
  * &lt;service-name-string&gt;&lt;delimiter-char&gt;&lt;service-uri-string&gt;
@@ -48,88 +49,77 @@ public class Discovery {
 	// Used separate the two fields that make up a service announcement.
 	private static final String DELIMITER = "\t";
 
-	private InetSocketAddress addr;
-	private String serviceName;
-	private String serviceURI;
-
 	/**
+	 * Starts sending service announcements at regular intervals...
+	 * 
 	 * @param serviceName the name of the service to announce
 	 * @param serviceURI  an uri string - representing the contact endpoint of the
 	 *                    service being announced
+	 * 
 	 */
-	public Discovery(InetSocketAddress addr, String serviceName, String serviceURI) {
-		this.addr = addr;
-		this.serviceName = serviceName;
-		this.serviceURI = serviceURI;
+	public static void announce(String serviceName, String serviceURI) {
+		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s", DISCOVERY_ADDR, serviceName,
+				serviceURI));
+
+		byte[] pktBytes = String.format("%s%s%s", serviceName, DELIMITER, serviceURI).getBytes();
+
+		DatagramPacket pkt = new DatagramPacket(pktBytes, pktBytes.length, DISCOVERY_ADDR);
+		new Thread(() -> {
+			try (DatagramSocket ms = new DatagramSocket()) {
+
+				for (;;) {
+					ms.send(pkt);
+					Thread.sleep(DISCOVERY_PERIOD);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
 
 	/**
-	 * Starts sending service announcements at regular intervals...
+	 * Performs discovery of instances of the service with the given name.
+	 * 
+	 * @param serviceName      the name of the service being discovered
+	 * @param minRepliesNeeded the required number of service replicas to find.
+	 * @return an array of URI with the service instances discovered. Returns an
+	 *         empty, 0-length, array if the service is not found within the alloted
+	 *         time.
+	 * @throws UnknownHostException
+	 * 
 	 */
-	public void start() {
-		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s", addr, serviceName, serviceURI));
+	public static URI[] findUrisOf(String serviceName, int minRepliesNeeded) throws UnknownHostException {
 
-		byte[] announceBytes = String.format("%s%s%s", serviceName, DELIMITER, serviceURI).getBytes();
-		DatagramPacket announcePkt = new DatagramPacket(announceBytes, announceBytes.length, addr);
+		URI[] array = new URI[minRepliesNeeded];
+		int i = 0, counter = 0;
+		InetAddress group = DISCOVERY_ADDR.getAddress();
 
-		try {
-			@SuppressWarnings("resource")
-			MulticastSocket ms = new MulticastSocket(addr.getPort());
-			ms.joinGroup(addr.getAddress());
-			// start thread to send periodic announcements
-			new Thread(() -> {
-				for (;;) {
-					try {
-						ms.send(announcePkt);
-						Thread.sleep(DISCOVERY_PERIOD);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+		try (MulticastSocket ms = new MulticastSocket(DISCOVERY_ADDR.getPort())) {
+
+			ms.joinGroup(group);
+
+			ms.setSoTimeout(DISCOVERY_TIMEOUT);
+
+			while (i < minRepliesNeeded) {
+
+				byte[] buffer = new byte[MAX_DATAGRAM_SIZE];
+				DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+				ms.receive(request);
+
+				String data = new String(request.getData(), 0, request.getLength());
+				String[] fileName = data.split(DELIMITER);
+
+				if (serviceName.equals(fileName[0])) {
+					array[counter++] = new URI(fileName[1]);
 				}
-			}).start();
+				i++;
+			}
 
-			// start thread to collect announcements
-			new Thread(() -> {
-				DatagramPacket pkt = new DatagramPacket(new byte[1024], 1024);
-				for (;;) {
-					try {
-						pkt.setLength(1024);
-						ms.receive(pkt);
-						String msg = new String(pkt.getData(), 0, pkt.getLength());
-						String[] msgElems = msg.split(DELIMITER);
-						if (msgElems.length == 2) { // periodic announcement
-							System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
-									pkt.getAddress().getHostAddress(), msg);
-							knownUrisOf(msgElems[1]);
-							for (int i = 0; i < knownUrisOf(msgElems[1]).length; i++)
-								System.out.println(knownUrisOf(msgElems[1])[i]);
-						}
-					} catch (IOException e) {
-					}
-				}
-			}).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return array;
 	}
 
-	/**
-	 * Returns the known servers for a service.
-	 * 
-	 * @param serviceName the name of the service being discovered
-	 * @return an array of URI with the service instances discovered.
-	 * 
-	 */
-	public static URI[] knownUrisOf(String serviceName) {
-		Map<URI, Long> results = new HashMap<>();
-		results.put(URI.create(serviceName), System.currentTimeMillis());
-		return results.keySet().toArray(new URI[0]);
-	}
 
-	// Main just for testing purposes
-	public static void main(String[] args) throws Exception {
-		Discovery discovery = new Discovery(DISCOVERY_ADDR, "test",
-				"http://" + InetAddress.getLocalHost().getHostAddress());
-		discovery.start();
-	}
 }

@@ -1,5 +1,6 @@
 package sd1920.trab1.clients.rest.users;
 
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 import javax.ws.rs.ProcessingException;
@@ -16,6 +17,7 @@ import org.glassfish.jersey.client.ClientProperties;
 
 import sd1920.trab1.api.User;
 import sd1920.trab1.api.rest.UserService;
+import sd1920.trab1.discovery.Discovery;
 
 public class PostUserRest {
 
@@ -24,13 +26,14 @@ public class PostUserRest {
 	public static final int CONNECTION_TIMEOUT = 1000;
 	public static final int REPLY_TIMEOUT = 600;
 
-	public static void main(String[] args) {
+	private static final String serviceName = "UserService";
+
+	public static void main(String[] args) throws UnknownHostException {
 
 		Scanner sc = new Scanner(System.in);
 
-		// You should replace this by the discovery class developed last week
 		System.out.println("Provide the server url:");
-		String serverUrl = sc.nextLine();
+		String serverUrl = Discovery.findUrisOf(serviceName, MAX_RETRIES)[0].getPath();
 
 		System.out.println("Provide username:");// username
 		String username = sc.nextLine();

@@ -16,6 +16,7 @@ import org.glassfish.jersey.client.ClientProperties;
 
 import sd1920.trab1.api.rest.MessageService;
 import sd1920.trab1.discovery.Discovery;
+import sd1920.trab1.discovery.DiscoveryDep;
 
 public class DeleteMessageRest {
 	public final static int MAX_RETRIES = 3;
@@ -28,9 +29,8 @@ public class DeleteMessageRest {
 	public static void main(String[] args) throws UnknownHostException {
 		Scanner sc = new Scanner(System.in);
 
-		/*System.out.println("Provide the server url:");
-		String serverUrl = sc.nextLine();*/
-		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();
+		System.out.println("Provide the server url:");
+		String serverUrl = Discovery.findUrisOf(serviceName,MAX_RETRIES)[0].getPath();
 
 		System.out.println("Provide the user:");
 		String user = sc.nextLine();

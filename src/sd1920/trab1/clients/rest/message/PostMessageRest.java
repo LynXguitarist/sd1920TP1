@@ -1,5 +1,6 @@
 package sd1920.trab1.clients.rest.message;
 
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
@@ -19,6 +20,7 @@ import org.glassfish.jersey.client.ClientProperties;
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.rest.MessageService;
 import sd1920.trab1.discovery.Discovery;
+import sd1920.trab1.discovery.DiscoveryDep;
 
 public class PostMessageRest {
 
@@ -29,15 +31,12 @@ public class PostMessageRest {
 
 	private static final String serviceName = "MessageService";
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws UnknownHostException {
 
 		Scanner sc = new Scanner(System.in);
 
-		/*
-		 * System.out.println("Provide the server url:"); String serverUrl =
-		 * sc.nextLine();
-		 */
-		String serverUrl = Discovery.knownUrisOf(serviceName)[0].getPath();// ?
+		System.out.println("Provide the server url:");
+		String serverUrl = Discovery.findUrisOf(serviceName,MAX_RETRIES)[0].getPath();
 
 		System.out.println("Provide the password:");
 		String pwd = sc.nextLine();

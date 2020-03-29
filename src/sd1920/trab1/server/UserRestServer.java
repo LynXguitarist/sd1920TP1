@@ -10,6 +10,7 @@ import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import sd1920.trab1.discovery.Discovery;
+import sd1920.trab1.discovery.DiscoveryDep;
 import sd1920.trab1.server.resources.UserResource;
 
 public class UserRestServer {
@@ -30,16 +31,12 @@ public class UserRestServer {
 		ResourceConfig config = new ResourceConfig();
 		config.register(UserResource.class);
 
-		// If rest and soap
 		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 		JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
 		Log.info(String.format("%s Server ready @ %s\n", SERVICE, serverURI));
 
-		InetSocketAddress addr = new InetSocketAddress(PORT);
-		Discovery discovery = new Discovery(addr, SERVICE, serverURI);
-		discovery.start();
-
+		Discovery.announce(SERVICE, serverURI);
 	}
 
 }
