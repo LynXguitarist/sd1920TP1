@@ -20,7 +20,6 @@ import sd1920.trab1.api.User;
 import sd1920.trab1.api.soap.MessageServiceSoap;
 import sd1920.trab1.api.soap.MessagesException;
 import sd1920.trab1.server.resources.MessageResource;
-import sd1920.trab1.server.resources.UserResource;
 import sd1920.trab1.server.utils.MessageUtills;
 
 @WebService(serviceName = MessageServiceSoap.NAME, targetNamespace = MessageServiceSoap.NAMESPACE, endpointInterface = MessageServiceSoap.INTERFACE)
@@ -28,7 +27,7 @@ public class MessageImpl implements MessageServiceSoap {
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
 	protected static final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
-	private final Map<String, User> allusers = UserResource.getAllusers();
+	private final Map<String, User> allusers = UserImpl.getAllusers();
 
 	private Random randomNumberGenerator;
 

@@ -143,7 +143,7 @@ public class UserResource implements UserService {
 		return old_user;
 	}
 
-	public synchronized static Map<String, User> getAllusers() {
+	protected synchronized static Map<String, User> getAllusers() {
 		return allusers;
 	}
 
