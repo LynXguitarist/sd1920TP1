@@ -211,13 +211,16 @@ public class MessageResource implements MessageService {
 		Log.info("User requesting = " + user);
 
 		Message m = null;
+		String m_sender = "";
 		synchronized (this) {
 			m = allMessages.get(mid); // checks if message exists
+			if (m != null)
+				m_sender = m.getSender();
 		}
 
 		if (m != null) {
 			// checks if the user is the sender of this message
-			if (m.getSender().contains(user)) {
+			if (m_sender.contains(user)) {
 				Log.info("Deleting message with id: " + mid);
 				for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
 					entry.getValue().remove(mid);
