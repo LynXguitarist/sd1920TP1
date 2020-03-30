@@ -135,17 +135,17 @@ public class MessageResource implements MessageService {
 	@Override
 	public List<Long> getMessages(String user, String pwd) {
 
-		User sender = allusers.get(user);
+		User receiver = allusers.get(user);
 		String user_pwd = "";
-		if (sender != null)
-			user_pwd = sender.getPwd();
+		if (receiver != null)
+			user_pwd = receiver.getPwd();
 
 		if (pwd == null)
 			pwd = "";
 
 		List<Long> messagesIds = new ArrayList<Long>();
 
-		if (sender == null || !pwd.equals(user_pwd)) {
+		if (receiver == null || !pwd.equals(user_pwd)) {
 			Log.info("Message was rejected due to sender not existing or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
@@ -165,18 +165,19 @@ public class MessageResource implements MessageService {
 	@Override
 	public void removeFromUserInbox(String user, long mid, String pwd) {
 
-		User sender = allusers.get(user);
+		User receiver = allusers.get(user);
 
 		if (pwd == null)
 			pwd = "";
 
-		if (sender == null || !pwd.equals(sender.getPwd())) {
+		if (receiver == null || !pwd.equals(receiver.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
+		
 		Log.info("Removing message with id " + mid + " from the user " + user + " inbox");
 		synchronized (this) {
-			if (!allMessages.containsKey(mid) || !userInboxs.get(user).contains(mid)) {
+			if (!userInboxs.get(user).contains(mid)) {
 				Log.info("Message with id: " + mid + " doen't exist");
 				throw new WebApplicationException(Status.NOT_FOUND);
 			} else {
@@ -198,14 +199,15 @@ public class MessageResource implements MessageService {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
+		
 		Log.info("Received request to delete message with id: " + mid + ".");
 		Log.info("Deleting message with id: " + mid);
-		synchronized (this) {
-			for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
-				entry.getValue().remove(mid);
-			}
-			allMessages.remove(mid);
+
+		for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
+			entry.getValue().remove(mid);
 		}
+		allMessages.remove(mid);
+
 	}
 
 	protected static Map<String, Set<Long>> getUserInbox() {
