@@ -213,7 +213,7 @@ public class MessageResource implements MessageService {
 		boolean isSender = false;
 		synchronized (this) {
 			// checks if the user is the sender of this message
-			isSender = allMessages.get(mid).getSender().contains("user");
+			isSender = allMessages.get(mid).getSender().contains(user);
 		}
 
 		if (isSender) {
