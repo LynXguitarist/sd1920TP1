@@ -95,24 +95,24 @@ public class MessageResource implements MessageService {
 	@Override
 	public Message getMessage(String user, long mid, String pwd) {
 
-		User sender = allusers.get(user);
+		User receiver = allusers.get(user);
 		String user_pwd = "";
-		if (sender != null)
-			user_pwd = sender.getPwd();
+		if (receiver != null)
+			user_pwd = receiver.getPwd();
 
 		if (pwd == null)
 			pwd = "";
 
-		if (sender == null || !pwd.equals(user_pwd)) {
+		if (receiver == null || !pwd.equals(user_pwd)) {
 			Log.info("Message was rejected due to sender not existing or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 
 		Log.info("Received request for message with id: " + mid + ".");
 		Message m = null;
-		
+
 		synchronized (this) {
-			m = getMessage(mid);
+			m = getMessage(mid, receiver);
 		}
 
 		if (m == null) {
@@ -196,14 +196,17 @@ public class MessageResource implements MessageService {
 	public static Map<String, Set<Long>> getUserInbox() {
 		return userInboxs;
 	}
-	
-	private Message getMessage(Long mid) {
+
+	private Message getMessage(Long mid, User user) {
 		Message message = null;
-		for(Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
-			if(entry.getValue().contains(mid))
+		Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
+		for (Long l : mids) {
+			if (l == mid) {
 				message = allMessages.get(mid);
+				break;
+			}
 		}
-		
+
 		return message;
 	}
 
