@@ -164,16 +164,19 @@ public class MessageResource implements MessageService {
 	public void deleteMessage(String user, long mid, String pwd) {
 
 		User sender = allusers.get(user);
+		
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 		Log.info("Received request to delete message with id: " + mid + ".");
 		Log.info("Deleting message with id: " + mid);
-		for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
-			entry.getValue().remove(mid);
+		synchronized (this) {
+			for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
+				entry.getValue().remove(mid);
+			}
+			allMessages.remove(mid);
 		}
-		allMessages.remove(mid);
 	}
 
 	public static Map<String, Set<Long>> getUserInbox() {
