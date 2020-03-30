@@ -174,17 +174,24 @@ public class MessageResource implements MessageService {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
-		
+
 		Log.info("Removing message with id " + mid + " from the user " + user + " inbox");
+
+		boolean found = false;
 		synchronized (this) {
-			if (!userInboxs.get(user).contains(mid)) {
-				Log.info("Message with id: " + mid + " doen't exist");
-				throw new WebApplicationException(Status.NOT_FOUND);
-			} else {
-				Log.info("Deleting message with id: " + mid);
-				userInboxs.get(user).remove(mid);
-			}
+			found = userInboxs.get(user).contains(mid);
 		}
+
+		if (!found) {
+			Log.info("Message with id: " + mid + " doen't exist in " + user + " inbox");
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+
+		synchronized (this) {
+			Log.info("Deleting message with id: " + mid + " from the " + user + " inbox.");
+			userInboxs.get(user).remove(mid);
+		}
+
 	}
 
 	@Override
