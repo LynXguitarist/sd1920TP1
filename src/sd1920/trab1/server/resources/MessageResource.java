@@ -74,7 +74,9 @@ public class MessageResource implements MessageService {
 		synchronized (this) {
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
-				//recipient = recipient.substring(0, recipient.indexOf("@"));
+				if (recipient.contains("@"))
+					recipient = recipient.substring(0, recipient.indexOf("@"));
+
 				if (!userInboxs.containsKey(recipient)) {
 					userInboxs.put(recipient, new HashSet<Long>());
 				}
@@ -116,7 +118,7 @@ public class MessageResource implements MessageService {
 
 	@Override
 	public List<Long> getMessages(String user, String pwd) {
-		
+
 		User sender = allusers.get(user);
 		List<Long> messagesIds = new ArrayList<Long>();
 
@@ -140,8 +142,8 @@ public class MessageResource implements MessageService {
 
 	@Override
 	public void removeFromUserInbox(String user, long mid, String pwd) {
-		
-		User sender = allusers.get(user); 
+
+		User sender = allusers.get(user);
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
@@ -161,7 +163,7 @@ public class MessageResource implements MessageService {
 	@Override
 	public void deleteMessage(String user, long mid, String pwd) {
 
-		User sender = allusers.get(user); 
+		User sender = allusers.get(user);
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
