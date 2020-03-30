@@ -208,10 +208,11 @@ public class MessageResource implements MessageService {
 		}
 
 		Log.info("Received request to delete message with id: " + mid + ".");
-		Log.info("Deleting message with id: " + mid);
+		Log.info("User requesting = " + user);
 
 		// checks if the user is the sender of this message
-		if (allMessages.get(mid).getSender().equals(user)) {
+		if (allMessages.get(mid).getSender().trim().contains(user.trim())) {
+			Log.info("Deleting message with id: " + mid);
 			for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
 				entry.getValue().remove(mid);
 			}
