@@ -206,14 +206,22 @@ public class MessageResource implements MessageService {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
-		
+
 		Log.info("Received request to delete message with id: " + mid + ".");
 		Log.info("Deleting message with id: " + mid);
 
-		for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
-			entry.getValue().remove(mid);
+		boolean isSender = false;
+		synchronized (this) {
+			// checks if the user is the sender of this message
+			isSender = allMessages.get(mid).getSender().contains("user");
 		}
-		allMessages.remove(mid);
+
+		if (isSender) {
+			for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
+				entry.getValue().remove(mid);
+			}
+			allMessages.remove(mid);
+		}
 
 	}
 
