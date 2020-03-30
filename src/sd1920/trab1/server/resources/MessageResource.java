@@ -128,6 +128,9 @@ public class MessageResource implements MessageService {
 
 		List<Long> messagesIds = new ArrayList<Long>();
 
+		if (pwd == null)
+			pwd = "";
+
 		if (sender == null || !pwd.equals(user_pwd)) {
 			Log.info("Message was rejected due to sender not existing or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
