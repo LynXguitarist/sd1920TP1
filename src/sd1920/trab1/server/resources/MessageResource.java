@@ -110,9 +110,9 @@ public class MessageResource implements MessageService {
 
 		Log.info("Received request for message with id: " + mid + ".");
 		Message m = null;
-
+		
 		synchronized (this) {
-			m = allMessages.get(mid);
+			m = getMessage(mid);
 		}
 
 		if (m == null) {
@@ -195,6 +195,16 @@ public class MessageResource implements MessageService {
 
 	public static Map<String, Set<Long>> getUserInbox() {
 		return userInboxs;
+	}
+	
+	private Message getMessage(Long mid) {
+		Message message = null;
+		for(Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
+			if(entry.getValue().contains(mid))
+				message = allMessages.get(mid);
+		}
+		
+		return message;
 	}
 
 }
