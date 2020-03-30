@@ -109,7 +109,7 @@ public class MessageResource implements MessageService {
 		}
 
 		Log.info("Received request for message with id: " + mid + "in inbox " + user);
-		Log.info("Username = "+user+" - "+ receiver.getName());
+		Log.info("Username = " + user + " - " + receiver.getName());
 		Message m = null;
 
 		synchronized (this) {
@@ -166,6 +166,10 @@ public class MessageResource implements MessageService {
 	public void removeFromUserInbox(String user, long mid, String pwd) {
 
 		User sender = allusers.get(user);
+
+		if (pwd == null)
+			pwd = "";
+
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
@@ -186,6 +190,9 @@ public class MessageResource implements MessageService {
 	public void deleteMessage(String user, long mid, String pwd) {
 
 		User sender = allusers.get(user);
+
+		if (pwd == null)
+			pwd = "";
 
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
