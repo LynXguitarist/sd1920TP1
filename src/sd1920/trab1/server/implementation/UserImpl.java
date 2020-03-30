@@ -17,7 +17,7 @@ import sd1920.trab1.server.utils.UserUtills;
 public class UserImpl implements UserServiceSoap {
 
 	private static final Map<String, User> allusers = new HashMap<>();
-	private static Map<String, Set<Long>> userInbox = MessageResource.getUserInbox();
+	private static Map<String, Set<Long>> userInbox = MessageImpl.getUserInbox();
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
 
@@ -101,5 +101,7 @@ public class UserImpl implements UserServiceSoap {
 		Log.info("Returning deleted user " + name);
 		return old_user;
 	}
+	
+	
 
 }

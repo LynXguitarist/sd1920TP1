@@ -122,8 +122,6 @@ public class MessageImpl implements MessageServiceSoap {
 		return messagesIds;
 	}
 
-	
-
 	@Override
 	public void removeFromUserInbox(String user, String pwd, long mid) throws MessagesException {
 
@@ -147,6 +145,10 @@ public class MessageImpl implements MessageServiceSoap {
 			allMessages.remove(mid);
 		}
 
+	}
+
+	protected static Map<String, Set<Long>> getUserInbox() {
+		return userInboxs;
 	}
 
 }

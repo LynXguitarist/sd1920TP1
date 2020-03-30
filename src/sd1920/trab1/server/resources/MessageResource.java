@@ -108,11 +108,23 @@ public class MessageResource implements MessageService {
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 
-		Log.info("Received request for message with id: " + mid + ".");
-		Message m = getM(mid, receiver);
+		Log.info("Received request for message with id: " + mid + "in inbox " + user);
+		Log.info("Username = "+user+" - "+ receiver.getName());
+		Message m = null;
+
+		synchronized (this) {
+			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
+			for (Long l : mids) {
+				Log.info("Getting message with id " + l + ".");
+				if (l == mid) {
+					m = allMessages.get(l);
+					break;
+				}
+			}
+		}
 
 		if (m == null) {
-			Log.info("Requested message does not exist.");
+			Log.info("Requested message does not exist." + mid);
 			throw new WebApplicationException(Status.NOT_FOUND);
 		}
 
@@ -189,21 +201,8 @@ public class MessageResource implements MessageService {
 		}
 	}
 
-	public static Map<String, Set<Long>> getUserInbox() {
+	protected static Map<String, Set<Long>> getUserInbox() {
 		return userInboxs;
-	}
-
-	private synchronized Message getM(Long mid, User user) {
-		Message message = null;
-		Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
-		for (Long l : mids) {
-			if (l == mid) {
-				message = allMessages.get(l);
-				break;
-			}
-		}
-
-		return message;
 	}
 
 }
