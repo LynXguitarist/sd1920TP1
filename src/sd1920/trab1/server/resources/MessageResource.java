@@ -122,9 +122,13 @@ public class MessageResource implements MessageService {
 	public List<Long> getMessages(String user, String pwd) {
 
 		User sender = allusers.get(user);
+		String user_pwd = "";
+		if (sender != null)
+			user_pwd = sender.getPwd();
+
 		List<Long> messagesIds = new ArrayList<Long>();
 
-		if (sender == null || !pwd.equals(sender.getPwd())) {
+		if (sender == null || !pwd.equals(user_pwd)) {
 			Log.info("Message was rejected due to sender not existing or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
@@ -136,7 +140,6 @@ public class MessageResource implements MessageService {
 				Log.info("Adding message with id: " + l + ".");
 				messagesIds.add(l);
 			}
-
 		}
 		Log.info("Returning the list of messages.");
 		return messagesIds;
