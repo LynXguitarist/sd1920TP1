@@ -7,7 +7,6 @@ import java.net.MulticastSocket;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 /**

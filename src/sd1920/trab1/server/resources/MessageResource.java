@@ -38,8 +38,8 @@ public class MessageResource implements MessageService {
 	public long postMessage(String pwd, Message msg) {
 
 		String sender_name = msg.getSender();
-		if (sender_name.contains("@"))// if is a domain, gets the name of sender
-			sender_name.substring(0, sender_name.indexOf('@'));
+		if (sender_name.contains("@")) // if is a domain, gets the name of sender
+			sender_name = sender_name.substring(0, sender_name.indexOf("@"));
 
 		User sender = allusers.get(sender_name);
 		Log.info("Received request to register a new message (Sender: " + msg.getSender() + "; Subject: "
@@ -74,6 +74,7 @@ public class MessageResource implements MessageService {
 		synchronized (this) {
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
+				recipient = recipient.substring(0, recipient.indexOf("@"));
 				if (!userInboxs.containsKey(recipient)) {
 					userInboxs.put(recipient, new HashSet<Long>());
 				}
@@ -113,10 +114,9 @@ public class MessageResource implements MessageService {
 		return m;
 	}
 
-	// nao pus o primeiro sync(tp3) por que tinha a
-	// ver com o user==null supostamente da 403 aqui
 	@Override
 	public List<Long> getMessages(String user, String pwd) {
+		
 		User sender = allusers.get(user);
 		List<Long> messagesIds = new ArrayList<Long>();
 
@@ -140,7 +140,8 @@ public class MessageResource implements MessageService {
 
 	@Override
 	public void removeFromUserInbox(String user, long mid, String pwd) {
-		User sender = allusers.get(user); // user em allusers
+		
+		User sender = allusers.get(user); 
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
@@ -160,7 +161,7 @@ public class MessageResource implements MessageService {
 	@Override
 	public void deleteMessage(String user, long mid, String pwd) {
 
-		User sender = allusers.get(user); // user em allusers
+		User sender = allusers.get(user); 
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
