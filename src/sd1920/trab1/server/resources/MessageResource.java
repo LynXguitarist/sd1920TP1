@@ -95,25 +95,21 @@ public class MessageResource implements MessageService {
 	@Override
 	public Message getMessage(String user, long mid, String pwd) {
 
-		User sender = allusers.get(user);
+		User receiver = allusers.get(user);
 		String user_pwd = "";
-		if (sender != null)
-			user_pwd = sender.getPwd();
+		if (receiver != null)
+			user_pwd = receiver.getPwd();
 
 		if (pwd == null)
 			pwd = "";
 
-		if (sender == null || !pwd.equals(user_pwd)) {
+		if (receiver == null || !pwd.equals(user_pwd)) {
 			Log.info("Message was rejected due to sender not existing or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
 
 		Log.info("Received request for message with id: " + mid + ".");
-		Message m = null;
-
-		synchronized (this) {
-			m = getMessage(mid, sender);
-		}
+		Message m = getM(mid, receiver);
 
 		if (m == null) {
 			Log.info("Requested message does not exist.");
@@ -197,11 +193,15 @@ public class MessageResource implements MessageService {
 		return userInboxs;
 	}
 
-	private Message getMessage(Long mid, User user) {
-		Message message = allMessages.get(mid);
-		String email = user.getName() + "@" + user.getDomain();
-		if (!message.getSender().equals(user.getName()) && !message.getSender().equals(email))
-			message = null;
+	private synchronized Message getM(Long mid, User user) {
+		Message message = null;
+		Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
+		for (Long l : mids) {
+			if (l == mid) {
+				message = allMessages.get(l);
+				break;
+			}
+		}
 
 		return message;
 	}
