@@ -74,7 +74,7 @@ public class MessageResource implements MessageService {
 		synchronized (this) {
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
-				recipient = recipient.substring(0, recipient.indexOf("@"));
+				//recipient = recipient.substring(0, recipient.indexOf("@"));
 				if (!userInboxs.containsKey(recipient)) {
 					userInboxs.put(recipient, new HashSet<Long>());
 				}
