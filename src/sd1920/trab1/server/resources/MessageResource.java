@@ -24,6 +24,7 @@ public class MessageResource implements MessageService {
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
 	protected static final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
+	// Map consumed from UserResource
 	private final Map<String, User> allusers = UserResource.getAllusers();
 
 	private Random randomNumberGenerator;
@@ -64,6 +65,7 @@ public class MessageResource implements MessageService {
 			String email = sender.getName() + "@" + sender.getDomain();
 			String new_sender = sender.getDisplayName() + " <" + email + ">";
 			msg.setSender(new_sender);
+			msg.setId(newID);
 			// Add the message to the global list of messages
 			allMessages.put(newID, msg);
 		}
@@ -164,7 +166,7 @@ public class MessageResource implements MessageService {
 	public void deleteMessage(String user, long mid, String pwd) {
 
 		User sender = allusers.get(user);
-		
+
 		if (sender == null || !pwd.equals(sender.getPwd())) {
 			Log.info("Sender does not exist or wrong password");
 			throw new WebApplicationException(Status.FORBIDDEN);

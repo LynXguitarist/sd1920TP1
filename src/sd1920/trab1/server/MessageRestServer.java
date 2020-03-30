@@ -16,8 +16,8 @@ import sd1920.trab1.server.resources.UserResource;
 public class MessageRestServer {
 
 	private static Logger Log = Logger.getLogger(MessageRestServer.class.getName());
-	
-	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
+
+	private static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -38,7 +38,7 @@ public class MessageRestServer {
 		JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
 		Log.info(String.format("%s Server ready @ %s\n", SERVICE, serverURI));
-		
+
 		Discovery discovery = new Discovery(DISCOVERY_ADDR, SERVICE, serverURI);
 		discovery.start();
 

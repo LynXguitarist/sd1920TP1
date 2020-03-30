@@ -18,11 +18,10 @@ import sd1920.trab1.server.utils.UserUtills;
 public class UserResource implements UserService {
 
 	private static final Map<String, User> allusers = new HashMap<>();
+	// Map consumed from MessageResource
 	private static Map<String, Set<Long>> userInbox = MessageResource.getUserInbox();
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
-
-	public static final String serviceName = "MessageService";
 
 	public UserResource() {
 	}
@@ -81,7 +80,10 @@ public class UserResource implements UserService {
 	public User updateUser(String name, String pwd, User user) {
 		Log.info("Received request to update user: " + name);
 
-		User old_user = allusers.get(name);
+		User old_user = null;
+		synchronized (this) {
+			old_user = allusers.get(name);
+		}
 
 		if (old_user == null) {// sees if the user exists
 			Log.info("User doesn't exist.");
