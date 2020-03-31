@@ -12,8 +12,6 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.jws.WebService;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
 
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
@@ -87,16 +85,21 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public Message getMessage(String user, String pwd, long mid) throws MessagesException {
 
-		Log.info("Received request for message with id: " + mid + ".");
+		if (pwd == null)
+			pwd = "";
+
+		Log.info("Received request for message with id: " + mid + "in inbox " + user);
 		Message m = null;
 
 		synchronized (this) {
-			m = allMessages.get(mid);
-		}
-
-		if (m == null) {
-			Log.info("Requested message does not exist.");
-			throw new WebApplicationException(Status.NOT_FOUND);
+			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
+			for (Long l : mids) {
+				Log.info("Getting message with id " + l + ".");
+				if (l == mid) {
+					m = allMessages.get(l);
+					break;
+				}
+			}
 		}
 
 		Log.info("Returning requested message to user.");
@@ -106,16 +109,18 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public List<Long> getMessages(String user, String pwd) throws MessagesException {
 
-		List<Long> messagesIds = new ArrayList<>();
+		if (pwd == null)
+			pwd = "";
+
+		List<Long> messagesIds = new ArrayList<Long>();
 
 		Log.info("Collecting all messages in server for user " + user);
 		synchronized (this) {
 			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
 			for (Long l : mids) {
-				Log.info("Adding message");
+				Log.info("Adding message with id: " + l + ".");
 				messagesIds.add(l);
 			}
-
 		}
 		Log.info("Returning the list of messages.");
 		return messagesIds;
@@ -124,9 +129,12 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public void removeFromUserInbox(String user, String pwd, long mid) throws MessagesException {
 
+		if (pwd == null)
+			pwd = "";
+
 		Log.info("Removing message with id " + mid + " from the user " + user + " inbox");
 		synchronized (this) {
-			Log.info("Deleting message with id: " + mid);
+			Log.info("Deleting message with id: " + mid + " from the " + user + " inbox.");
 			userInboxs.get(user).remove(mid);
 		}
 
@@ -135,15 +143,30 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public void deleteMessage(String user, String pwd, long mid) throws MessagesException {
 
+
+		if (pwd == null)
+			pwd = "";
+
 		Log.info("Received request to delete message with id: " + mid + ".");
-		Log.info("Deleting message with id: " + mid);
+		Message m = null;
+		String m_sender = "";
 		synchronized (this) {
-			for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
-				entry.getValue().remove(mid);
-			}
-			allMessages.remove(mid);
+			m = allMessages.get(mid); // checks if message exists
+			if (m != null)
+				m_sender = m.getSender();
 		}
 
+		if (m != null) {
+			// checks if the user is the sender of this message
+			if (m_sender.contains(user)) {
+				Log.info("Deleting message with id: " + mid);
+				for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
+					entry.getValue().remove(mid);
+				}
+				allMessages.remove(mid);
+			}
+
+		}
 	}
 
 	protected static Map<String, Set<Long>> getUserInbox() {
