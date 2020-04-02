@@ -49,9 +49,12 @@ public class UserImpl implements UserServiceSoap {
 		synchronized (this) {
 			user = allusers.get(name);
 		}
-
+		if(user == null)
+			throw new MessagesException();
+		
 		Log.info("Returning user with name : " + name);
 		return user;
+		
 	}
 
 	@Override
