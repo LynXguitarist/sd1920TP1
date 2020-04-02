@@ -49,12 +49,13 @@ public class UserImpl implements UserServiceSoap {
 		synchronized (this) {
 			user = allusers.get(name);
 		}
-		if(user == null)
+		// Exeptions
+		if (user == null || IsNullOrEmpty(pwd) || !pwd.equals(user.getPwd()))
 			throw new MessagesException();
-		
+
 		Log.info("Returning user with name : " + name);
 		return user;
-		
+
 	}
 
 	@Override
@@ -107,6 +108,13 @@ public class UserImpl implements UserServiceSoap {
 
 	protected synchronized static Map<String, User> getAllusers() {
 		return allusers;
+	}
+
+	private boolean IsNullOrEmpty(String string) {
+		if (string == null || string.isEmpty())
+			return true;
+
+		return false;
 	}
 
 }
