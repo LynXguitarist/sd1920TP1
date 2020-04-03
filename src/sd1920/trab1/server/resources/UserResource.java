@@ -30,9 +30,19 @@ public class UserResource implements UserService {
 	public String postUser(User user) {
 
 		Log.info("Received request to register the user " + user.getName());
+		String name = "";
+		String domain = "";
+		String pwd = "";
+		boolean hasUser = false;
 
-		if (IsNullOrEmpty(user.getName()) || IsNullOrEmpty(user.getDomain()) || IsNullOrEmpty(user.getPwd())
-				|| allusers.get(user.getName()) != null) {
+		synchronized (this) {
+			hasUser = allusers.containsKey(user.getName());
+			name = user.getName();
+			domain = user.getDomain();
+			pwd = user.getPwd();
+		}
+
+		if (IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain) || hasUser) {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
 		} else if (Discovery.knownUrisOf(user.getDomain()).length == 0) {
@@ -148,7 +158,7 @@ public class UserResource implements UserService {
 	}
 
 	private boolean IsNullOrEmpty(String string) {
-		if (string == null || string.isEmpty())
+		if (string == null || string.isEmpty() || string.contains(" "))
 			return true;
 
 		return false;

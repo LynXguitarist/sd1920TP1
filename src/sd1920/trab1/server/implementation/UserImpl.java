@@ -32,19 +32,26 @@ public class UserImpl implements UserServiceSoap {
 	public String postUser(User user) throws MessagesException {
 
 		Log.info("Received request to register the user " + user.getName());
-		Log.info("Creating user.");
+		String name = "";
+		String domain = "";
+		String pwd = "";
+		boolean hasUser = false;
+
 		synchronized (this) {
-			if (allusers.containsKey(user.getName()) || IsNullOrEmpty(user.getName()) || IsNullOrEmpty(user.getPwd())
-					|| IsNullOrEmpty(user.getDomain()) || user.getDomain().contains(" ")) {
-
-				throw new MessagesException();
-
-			} else {
-
-				allusers.put(user.getName(), user);
-			}
-
+			hasUser = allusers.containsKey(user.getName());
+			name = user.getName();
+			domain = user.getDomain();
+			pwd = user.getPwd();
 		}
+
+		Log.info("Creating user.");
+
+		if (hasUser || IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain)) {
+
+			throw new MessagesException();
+		}
+
+		allusers.put(user.getName(), user);
 
 		Log.info("Created new user with domain: " + user.getDomain());
 		UserUtills.printUser(user);
@@ -144,7 +151,7 @@ public class UserImpl implements UserServiceSoap {
 	}
 
 	private boolean IsNullOrEmpty(String string) {
-		if (string == null || string.isEmpty())
+		if (string == null || string.isEmpty() || string.contains(" "))
 			return true;
 
 		return false;
