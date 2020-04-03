@@ -116,12 +116,12 @@ public class UserImpl implements UserServiceSoap {
 		String new_displayName = user.getDisplayName();
 		String domain = old_user.getDomain();
 
-		synchronized (this) {
-			if (IsNullOrEmpty(new_pwd))
-				new_pwd = old_user.getPwd();
-			if (IsNullOrEmpty(new_displayName))
-				new_displayName = old_user.getDisplayName();
+		if (IsNullOrEmpty(new_pwd))
+			new_pwd = old_user.getPwd();
+		if (IsNullOrEmpty(new_displayName))
+			new_displayName = old_user.getDisplayName();
 
+		synchronized (this) {
 			Log.info("Updating user " + name);
 			// Updating user
 			if (!old_user.getPwd().contentEquals(pwd)) {

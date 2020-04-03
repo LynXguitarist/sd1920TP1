@@ -91,17 +91,22 @@ public class UserResource implements UserService {
 
 	@Override
 	public User updateUser(String name, String pwd, User user) {
+
 		Log.info("Received request to update user: " + name);
 
 		User old_user = null;
+		String old_pwd = "";
 		synchronized (this) {
 			old_user = allusers.get(name);
 		}
 
+		if (user != null)
+			old_pwd = user.getPwd();
+
 		if (old_user == null) {// sees if the user exists
 			Log.info("User doesn't exist.");
 			throw new WebApplicationException(Status.FORBIDDEN);
-		} else if (!old_user.getPwd().equals(pwd)) {// sees if the pwd is correct
+		} else if (!pwd.equals(old_pwd)) {// sees if the pwd is correct
 			Log.info("Wrong password.");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
@@ -110,16 +115,13 @@ public class UserResource implements UserService {
 		String new_displayName = user.getDisplayName();
 		String domain = old_user.getDomain();
 
-		synchronized (this) {
-			if (IsNullOrEmpty(new_pwd))
-				new_pwd = old_user.getPwd();
-			if (IsNullOrEmpty(new_displayName))
-				new_displayName = old_user.getDisplayName();
-		}
-
-		Log.info("Updating user " + name);
+		if (IsNullOrEmpty(new_pwd))
+			new_pwd = old_pwd;
+		if (IsNullOrEmpty(new_displayName))
+			new_displayName = old_user.getDisplayName();
 
 		synchronized (this) {
+			Log.info("Updating user " + name);
 			allusers.put(name, new User(name, new_pwd, domain));
 			allusers.get(name).setDisplayName(new_displayName);
 		}
