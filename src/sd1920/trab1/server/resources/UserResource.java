@@ -45,10 +45,10 @@ public class UserResource implements UserService {
 			pwd = user.getPwd();
 		}
 
-		if (IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain) || hasUser) {
+		if (IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || hasUser) {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
-		} else if (Discovery.knownUrisOf(user.getDomain()).length == 0) {
+		} else if (Discovery.knownUrisOf(user.getDomain()).length == 0 || IsNullOrEmpty(domain)) {
 			Log.info("User domain is different then the server domain.");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}

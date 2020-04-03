@@ -73,8 +73,11 @@ public class UserImpl implements UserServiceSoap {
 		String user_pwd = "";
 		synchronized (this) {
 			user = allusers.get(name);
-			user_pwd = user.getPwd();
 		}
+		
+		if(user != null)
+			user_pwd = user.getPwd();
+		
 		// Exeptions
 		if (user == null || IsNullOrEmpty(pwd) || !pwd.equals(user_pwd))
 			throw new MessagesException();
