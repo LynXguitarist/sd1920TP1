@@ -24,13 +24,26 @@ public class UserImpl implements UserServiceSoap {
 	public UserImpl() {
 	}
 
+	/*
+	 * fiz assim porque o if fora do sync tava a dar me erros que nao tava a
+	 * perceber muda se achares que e melhor
+	 */
 	@Override
 	public String postUser(User user) throws MessagesException {
 
 		Log.info("Received request to register the user " + user.getName());
 		Log.info("Creating user.");
 		synchronized (this) {
-			allusers.put(user.getName(), user);
+			if (allusers.containsKey(user.getName()) || IsNullOrEmpty(user.getName()) || IsNullOrEmpty(user.getPwd())
+					|| IsNullOrEmpty(user.getDomain()) || user.getDomain().contains(" ")) {
+
+				throw new MessagesException();
+
+			} else {
+
+				allusers.put(user.getName(), user);
+			}
+
 		}
 
 		Log.info("Created new user with domain: " + user.getDomain());
@@ -67,23 +80,33 @@ public class UserImpl implements UserServiceSoap {
 		synchronized (this) {
 			old_user = allusers.get(name);
 		}
+		
 
 		String new_pwd = user.getPwd();
 		String new_displayName = user.getDisplayName();
 		String domain = old_user.getDomain();
 
 		synchronized (this) {
-			new_pwd = old_user.getPwd();
-			new_displayName = old_user.getDisplayName();
+			if (IsNullOrEmpty(new_pwd))
+				new_pwd = old_user.getPwd();
+			if (IsNullOrEmpty(new_displayName))
+				new_displayName = old_user.getDisplayName();
+		
 		}
 
 		Log.info("Updating user " + name);
 
 		synchronized (this) {
+			
 			allusers.put(name, new User(name, new_pwd, domain));
 			allusers.get(name).setDisplayName(new_displayName);
+		
+			
 		}
 
+		if(!old_user.getPwd().contentEquals(pwd)) {
+			throw new MessagesException();
+		}
 		Log.info("Returning user " + name);
 		return allusers.get(name);
 	}
