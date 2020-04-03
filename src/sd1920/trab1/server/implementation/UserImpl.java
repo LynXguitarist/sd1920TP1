@@ -10,6 +10,7 @@ import javax.jws.WebService;
 import sd1920.trab1.api.User;
 import sd1920.trab1.api.soap.MessagesException;
 import sd1920.trab1.api.soap.UserServiceSoap;
+import sd1920.trab1.discovery.Discovery;
 import sd1920.trab1.server.resources.MessageResource;
 import sd1920.trab1.server.utils.UserUtills;
 
@@ -48,7 +49,8 @@ public class UserImpl implements UserServiceSoap {
 		}
 
 		// Exceptions
-		if (hasUser || IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain)) {
+		if (hasUser || IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain)
+				|| Discovery.knownUrisOf(domain).length == 0) {
 			Log.info("Error creating user.");
 			throw new MessagesException();
 		}
@@ -96,6 +98,7 @@ public class UserImpl implements UserServiceSoap {
 
 		Log.info("Received request to update user: " + name);
 		User old_user = null;
+		String old_pwd = "";
 		boolean hasUser = false;
 
 		synchronized (this) {
@@ -103,7 +106,10 @@ public class UserImpl implements UserServiceSoap {
 			hasUser = allusers.containsKey(name);
 		}
 
-		if (!hasUser)
+		if (old_user != null)
+			old_pwd = old_user.getPwd();
+
+		if (!hasUser || !pwd.equals(old_pwd))
 			throw new MessagesException();
 
 		String new_pwd = user.getPwd();
@@ -117,7 +123,7 @@ public class UserImpl implements UserServiceSoap {
 				new_displayName = old_user.getDisplayName();
 
 			Log.info("Updating user " + name);
-
+			// Updating user
 			if (!old_user.getPwd().contentEquals(pwd)) {
 				throw new MessagesException();
 			} else {
@@ -158,7 +164,7 @@ public class UserImpl implements UserServiceSoap {
 	}
 
 	private boolean IsNullOrEmpty(String string) {
-		if (string == null || string.isEmpty() || string.contains(" "))
+		if (string == null || string.isEmpty())
 			return true;
 
 		return false;
