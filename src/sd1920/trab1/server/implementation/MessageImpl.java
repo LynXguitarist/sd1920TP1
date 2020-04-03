@@ -56,6 +56,7 @@ public class MessageImpl implements MessageServiceSoap {
 			String email = sender.getName() + "@" + sender.getDomain();
 			String new_sender = sender.getDisplayName() + " <" + email + ">";
 			msg.setSender(new_sender);
+			msg.setId(newID);
 			// Add the message to the global list of messages
 			allMessages.put(newID, msg);
 		}
