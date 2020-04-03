@@ -39,19 +39,24 @@ public class UserImpl implements UserServiceSoap {
 
 		synchronized (this) {
 			hasUser = allusers.containsKey(user.getName());
+		}
+
+		if (user != null) {
 			name = user.getName();
 			domain = user.getDomain();
 			pwd = user.getPwd();
 		}
 
-		Log.info("Creating user.");
-
+		// Exceptions
 		if (hasUser || IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain)) {
-
+			Log.info("Error creating user.");
 			throw new MessagesException();
 		}
 
-		allusers.put(user.getName(), user);
+		synchronized (this) {
+			Log.info("Creating user.");
+			allusers.put(user.getName(), user);
+		}
 
 		Log.info("Created new user with domain: " + user.getDomain());
 		UserUtills.printUser(user);
@@ -65,17 +70,17 @@ public class UserImpl implements UserServiceSoap {
 
 		Log.info("Received request to return user with username: " + name);
 		User user = null;
-
+		String user_pwd = "";
 		synchronized (this) {
 			user = allusers.get(name);
+			user_pwd = user.getPwd();
 		}
 		// Exeptions
-		if (user == null || IsNullOrEmpty(pwd) || !pwd.equals(user.getPwd()))
+		if (user == null || IsNullOrEmpty(pwd) || !pwd.equals(user_pwd))
 			throw new MessagesException();
 
 		Log.info("Returning user with name : " + name);
 		return user;
-
 	}
 
 	/*
@@ -86,13 +91,15 @@ public class UserImpl implements UserServiceSoap {
 	public User updateUser(String name, String pwd, User user) throws MessagesException {
 
 		Log.info("Received request to update user: " + name);
-
 		User old_user = null;
+		boolean hasUser = false;
+
 		synchronized (this) {
 			old_user = allusers.get(name);
+			hasUser = allusers.containsKey(name);
 		}
 
-		if (!allusers.containsKey(name))
+		if (!hasUser)
 			throw new MessagesException();
 
 		String new_pwd = user.getPwd();

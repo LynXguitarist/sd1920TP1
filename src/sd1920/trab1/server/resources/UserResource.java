@@ -37,6 +37,9 @@ public class UserResource implements UserService {
 
 		synchronized (this) {
 			hasUser = allusers.containsKey(user.getName());
+		}
+
+		if (user != null) {
 			name = user.getName();
 			domain = user.getDomain();
 			pwd = user.getPwd();
