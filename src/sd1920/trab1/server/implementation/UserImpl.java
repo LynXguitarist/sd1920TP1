@@ -71,6 +71,10 @@ public class UserImpl implements UserServiceSoap {
 
 	}
 
+	/*
+	 * tive de fazer o if dentro do segundo sync porque tava a a atualizar a pass
+	 * mesmo que desse erro de nao poder fazer o update
+	 */
 	@Override
 	public User updateUser(String name, String pwd, User user) throws MessagesException {
 
@@ -80,7 +84,9 @@ public class UserImpl implements UserServiceSoap {
 		synchronized (this) {
 			old_user = allusers.get(name);
 		}
-		
+
+		if (!allusers.containsKey(name))
+			throw new MessagesException();
 
 		String new_pwd = user.getPwd();
 		String new_displayName = user.getDisplayName();
@@ -91,22 +97,21 @@ public class UserImpl implements UserServiceSoap {
 				new_pwd = old_user.getPwd();
 			if (IsNullOrEmpty(new_displayName))
 				new_displayName = old_user.getDisplayName();
-		
+
 		}
 
 		Log.info("Updating user " + name);
 
 		synchronized (this) {
-			
-			allusers.put(name, new User(name, new_pwd, domain));
-			allusers.get(name).setDisplayName(new_displayName);
-		
-			
+			if (!old_user.getPwd().contentEquals(pwd)) {
+				throw new MessagesException();
+			} else {
+				allusers.put(name, new User(name, new_pwd, domain));
+				allusers.get(name).setDisplayName(new_displayName);
+
+			}
 		}
 
-		if(!old_user.getPwd().contentEquals(pwd)) {
-			throw new MessagesException();
-		}
 		Log.info("Returning user " + name);
 		return allusers.get(name);
 	}
@@ -118,11 +123,16 @@ public class UserImpl implements UserServiceSoap {
 		User old_user = null;
 
 		synchronized (this) {
+
 			old_user = allusers.get(name);
 
-			Log.info("Deleting user " + name);
-			allusers.remove(name);
-			userInbox.remove(name);
+			if (!allusers.containsKey(name) || !old_user.getPwd().equals(pwd)) {
+				throw new MessagesException();
+			} else {
+				Log.info("Deleting user " + name);
+				allusers.remove(name);
+				userInbox.remove(name);
+			}
 		}
 
 		Log.info("Returning deleted user " + name);
