@@ -71,13 +71,14 @@ public class UserImpl implements UserServiceSoap {
 		Log.info("Received request to return user with username: " + name);
 		User user = null;
 		String user_pwd = "";
+
 		synchronized (this) {
 			user = allusers.get(name);
 		}
-		
-		if(user != null)
+
+		if (user != null)
 			user_pwd = user.getPwd();
-		
+
 		// Exeptions
 		if (user == null || IsNullOrEmpty(pwd) || !pwd.equals(user_pwd))
 			throw new MessagesException();
@@ -115,17 +116,13 @@ public class UserImpl implements UserServiceSoap {
 			if (IsNullOrEmpty(new_displayName))
 				new_displayName = old_user.getDisplayName();
 
-		}
+			Log.info("Updating user " + name);
 
-		Log.info("Updating user " + name);
-
-		synchronized (this) {
 			if (!old_user.getPwd().contentEquals(pwd)) {
 				throw new MessagesException();
 			} else {
 				allusers.put(name, new User(name, new_pwd, domain));
 				allusers.get(name).setDisplayName(new_displayName);
-
 			}
 		}
 

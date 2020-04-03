@@ -45,10 +45,10 @@ public class UserResource implements UserService {
 			pwd = user.getPwd();
 		}
 
-		if (IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || hasUser) {
+		if (IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain) || hasUser) {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
-		} else if (Discovery.knownUrisOf(user.getDomain()).length == 0 || IsNullOrEmpty(domain)) {
+		} else if (Discovery.knownUrisOf(user.getDomain()).length == 0) {
 			Log.info("User domain is different then the server domain.");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
@@ -161,7 +161,7 @@ public class UserResource implements UserService {
 	}
 
 	private boolean IsNullOrEmpty(String string) {
-		if (string == null || string.isEmpty() || string.contains(" "))
+		if (string == null || string.isEmpty())
 			return true;
 
 		return false;
