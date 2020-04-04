@@ -154,10 +154,24 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public void removeFromUserInbox(String user, String pwd, long mid) throws MessagesException {
 
+		User receiver = allusers.get(user);
+
 		if (pwd == null)
 			pwd = "";
 
+		if (receiver == null || !pwd.equals(receiver.getPwd()))
+			throw new MessagesException();
+
 		Log.info("Removing message with id " + mid + " from the user " + user + " inbox");
+
+		boolean found = false;
+		synchronized (this) {
+			found = userInboxs.get(user).contains(mid);
+		}
+
+		if (!found)
+			throw new MessagesException();
+
 		synchronized (this) {
 			Log.info("Deleting message with id: " + mid + " from the " + user + " inbox.");
 			userInboxs.get(user).remove(mid);
@@ -168,9 +182,15 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public void deleteMessage(String user, String pwd, long mid) throws MessagesException {
 
+		User sender = allusers.get(user);
+		
+		
 		if (pwd == null)
 			pwd = "";
 
+		if (sender == null || !pwd.equals(sender.getPwd()))
+			throw new MessagesException();
+		
 		Log.info("Received request to delete message with id: " + mid + ".");
 		Message m = null;
 		String m_sender = "";
