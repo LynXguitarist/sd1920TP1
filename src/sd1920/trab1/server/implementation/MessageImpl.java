@@ -46,6 +46,10 @@ public class MessageImpl implements MessageServiceSoap {
 		Log.info("Received request to register a new message (Sender: " + msg.getSender() + "; Subject: "
 				+ msg.getSubject() + ")");
 
+		if (sender == null || !pwd.equals(sender.getPwd()) || msg.getSender() == null || msg.getDestination() == null
+				|| msg.getDestination().size() == 0)
+			throw new MessagesException();
+
 		long newID = 0;
 		synchronized (this) {
 			// Generate a new id for the message, that is not in use yet
@@ -86,8 +90,16 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public Message getMessage(String user, String pwd, long mid) throws MessagesException {
 
+		User receiver = allusers.get(user);
+		String user_pwd = "";
+		if (receiver != null)
+			user_pwd = receiver.getPwd();
+
 		if (pwd == null)
 			pwd = "";
+
+		if (receiver == null || !pwd.equals(user_pwd))
+			throw new MessagesException();
 
 		Log.info("Received request for message with id: " + mid + "in inbox " + user);
 		Message m = null;
@@ -103,6 +115,9 @@ public class MessageImpl implements MessageServiceSoap {
 			}
 		}
 
+		if (m == null)
+			throw new MessagesException();
+
 		Log.info("Returning requested message to user.");
 		return m;
 	}
@@ -110,10 +125,18 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public List<Long> getMessages(String user, String pwd) throws MessagesException {
 
+		User receiver = allusers.get(user);
+		String user_pwd = "";
+		if (receiver != null)
+			user_pwd = receiver.getPwd();
+
 		if (pwd == null)
 			pwd = "";
 
 		List<Long> messagesIds = new ArrayList<Long>();
+
+		if (receiver == null || !pwd.equals(user_pwd))
+			throw new MessagesException();
 
 		Log.info("Collecting all messages in server for user " + user);
 		synchronized (this) {
@@ -123,6 +146,7 @@ public class MessageImpl implements MessageServiceSoap {
 				messagesIds.add(l);
 			}
 		}
+
 		Log.info("Returning the list of messages.");
 		return messagesIds;
 	}
@@ -143,7 +167,6 @@ public class MessageImpl implements MessageServiceSoap {
 
 	@Override
 	public void deleteMessage(String user, String pwd, long mid) throws MessagesException {
-
 
 		if (pwd == null)
 			pwd = "";
