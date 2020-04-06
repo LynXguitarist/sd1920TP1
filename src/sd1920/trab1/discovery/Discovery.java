@@ -2,6 +2,7 @@ package sd1920.trab1.discovery;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.URI;
@@ -51,6 +52,8 @@ public class Discovery {
 	private String serviceName;
 	private String serviceURI;
 
+	private static Map<String, String> urls = new HashMap<>();
+
 	/**
 	 * @param serviceName the name of the service to announce
 	 * @param serviceURI  an uri string - representing the contact endpoint of the
@@ -75,6 +78,7 @@ public class Discovery {
 			@SuppressWarnings("resource")
 			MulticastSocket ms = new MulticastSocket(addr.getPort());
 			ms.joinGroup(addr.getAddress());
+
 			// start thread to send periodic announcements
 			new Thread(() -> {
 				for (;;) {
@@ -97,9 +101,11 @@ public class Discovery {
 						String msg = new String(pkt.getData(), 0, pkt.getLength());
 						String[] msgElems = msg.split(DELIMITER);
 						if (msgElems.length == 2) { // periodic announcement
-							System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
-									pkt.getAddress().getHostAddress(), msg);
+							// System.out.printf("FROM %s (%s) : %s\n",
+							// pkt.getAddress().getCanonicalHostName(),
+							// pkt.getAddress().getHostAddress(), msg);
 							knownUrisOf(msgElems[1]);
+							urls.put(pkt.getAddress().getHostName(), msgElems[1]);
 						}
 					} catch (IOException e) {
 					}
@@ -117,12 +123,16 @@ public class Discovery {
 	 * @return an array of URI with the service instances discovered.
 	 * 
 	 */
-	public static URI[] knownUrisOf(String serviceName) {
+	public static URI[] knownUrisOf(String serviceName) {// apagar isto
 		Map<URI, Long> results = new HashMap<>();
 		if (!serviceName.contains(" ")) {
 			results.put(URI.create(serviceName), System.currentTimeMillis());
 		}
 		return results.keySet().toArray(new URI[0]);
+	}
+
+	public static String getUrl(String domain) {
+		return urls.get(domain);
 	}
 
 }

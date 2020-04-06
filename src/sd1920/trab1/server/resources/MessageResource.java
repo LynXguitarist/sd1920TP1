@@ -1,5 +1,6 @@
 package sd1920.trab1.server.resources;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,19 +82,27 @@ public class MessageResource implements MessageService {
 
 		Log.info("Created new message with id: " + newID);
 		MessageUtills.printMessage(allMessages.get(newID));
-
+		Log.info("1");
 		synchronized (this) {
+			Log.info("2");
+			Log.info("3-" + msg.getDestination().isEmpty());
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
+				Log.info(recipient);
 				String domain = recipient.split("@")[1];
+				System.out.println("domain = " + domain + " sender domain = " + sender.getDomain());
 				if (!sender.getDomain().equals(domain)) {
+					Log.info("dentro if");
 					ClientConfig config = new ClientConfig();
 					Client client = ClientBuilder.newClient(config);
-					String serverUrl = Discovery.knownUrisOf(domain)[0].getPath();
-					WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+					String serverUrl = Discovery.getUrl(domain);
+					Log.info(serverUrl);
 
+					WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+					target.queryParam("pwd", pwd);
 					target.request().accept(MediaType.APPLICATION_JSON)
 							.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
+
 				} else {
 					if (recipient.contains("@"))
 						recipient = recipient.substring(0, recipient.indexOf("@"));
