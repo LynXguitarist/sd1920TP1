@@ -12,11 +12,20 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import org.glassfish.jersey.client.ClientConfig;
 
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
 import sd1920.trab1.api.rest.MessageService;
+import sd1920.trab1.discovery.Discovery;
 import sd1920.trab1.server.utils.MessageUtills;
 
 @Singleton
@@ -76,13 +85,24 @@ public class MessageResource implements MessageService {
 		synchronized (this) {
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
-				if (recipient.contains("@"))
-					recipient = recipient.substring(0, recipient.indexOf("@"));
+				String domain = recipient.split("@")[1];
+				if (!sender.getDomain().equals(domain)) {
+					ClientConfig config = new ClientConfig();
+					Client client = ClientBuilder.newClient(config);
+					String serverUrl = Discovery.knownUrisOf(domain)[0].getPath();
+					WebTarget target = client.target(serverUrl).path(MessageService.PATH);
 
-				if (!userInboxs.containsKey(recipient)) {
-					userInboxs.put(recipient, new HashSet<Long>());
+					target.request().accept(MediaType.APPLICATION_JSON)
+							.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
+				} else {
+					if (recipient.contains("@"))
+						recipient = recipient.substring(0, recipient.indexOf("@"));
+
+					if (!userInboxs.containsKey(recipient)) {
+						userInboxs.put(recipient, new HashSet<Long>());
+					}
+					userInboxs.get(recipient).add(newID);
 				}
-				userInboxs.get(recipient).add(newID);
 			}
 		}
 
@@ -156,6 +176,7 @@ public class MessageResource implements MessageService {
 			for (Long l : mids) {
 				Log.info("Adding message with id: " + l + ".");
 				messagesIds.add(l);
+
 			}
 		}
 		Log.info("Returning the list of messages.");
