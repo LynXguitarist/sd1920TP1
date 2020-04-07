@@ -96,4 +96,9 @@ public interface MessageService {
 	@Path("/msg/{user}/{mid}")
 	void deleteMessage(@PathParam("user") String user, @PathParam("mid") long mid, @QueryParam("pwd") String pwd);
 
+	@POST
+	@Path("/otherdomain/{newID}/{name}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	void addMessageToInbox(@PathParam("newID") long newID, @PathParam("name") String name, Message msg);
 }

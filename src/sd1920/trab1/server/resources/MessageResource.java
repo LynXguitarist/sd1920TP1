@@ -1,6 +1,5 @@
 package sd1920.trab1.server.resources;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.glassfish.jersey.client.ClientConfig;
@@ -82,34 +80,23 @@ public class MessageResource implements MessageService {
 
 		Log.info("Created new message with id: " + newID);
 		MessageUtills.printMessage(allMessages.get(newID));
-		Log.info("1");
+
 		synchronized (this) {
-			Log.info("2");
-			Log.info("3-" + msg.getDestination().isEmpty());
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
-				Log.info(recipient);
-				String domain = recipient.split("@")[1];
-				System.out.println("domain = " + domain + " sender domain = " + sender.getDomain());
+
+				String domain = "";
+				if (recipient.contains("@")) {
+					domain = recipient.split("@")[1];
+					recipient = recipient.substring(0, recipient.indexOf("@"));
+				}
+
 				if (!sender.getDomain().equals(domain)) {
-					Log.info("dentro if");
-					ClientConfig config = new ClientConfig();
-					Client client = ClientBuilder.newClient(config);
-					String serverUrl = Discovery.getUrl(domain);
-					Log.info(serverUrl);
-
-					WebTarget target = client.target(serverUrl).path(MessageService.PATH);
-					target.queryParam("pwd", pwd);
-					target.request().accept(MediaType.APPLICATION_JSON)
-							.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
-
+					sendMessage(domain, newID, recipient, msg);// calls the server from the recipient domain
 				} else {
-					if (recipient.contains("@"))
-						recipient = recipient.substring(0, recipient.indexOf("@"));
-
-					if (!userInboxs.containsKey(recipient)) {
+					if (!userInboxs.containsKey(recipient))
 						userInboxs.put(recipient, new HashSet<Long>());
-					}
+
 					userInboxs.get(recipient).add(newID);
 				}
 			}
@@ -261,8 +248,36 @@ public class MessageResource implements MessageService {
 		}
 	}
 
+	@Override
+	public void addMessageToInbox(long newID, String name, Message msg) {
+		Log.info("Received message with ID " + newID + " from another domain.");
+		Log.info("Adding msg to " + name + "inbox.");
+		if (!userInboxs.containsKey(name))
+			userInboxs.put(name, new HashSet<Long>());
+
+		userInboxs.get(name).add(newID);
+		allMessages.put(newID, msg);
+	}
+
+	// --------------------------------Private_Methods------------------------------------//
+
 	protected static Map<String, Set<Long>> getUserInbox() {
 		return userInboxs;
+	}
+
+	private void sendMessage(String domain, long newID, String name, Message msg) {
+
+		String mid = String.valueOf(newID);
+
+		ClientConfig config = new ClientConfig();
+		Client client = ClientBuilder.newClient(config);
+		String serverUrl = Discovery.getUrl(domain);
+
+		Log.info("Conecting to... " + serverUrl);
+
+		WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+		target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)
+				.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
 	}
 
 }

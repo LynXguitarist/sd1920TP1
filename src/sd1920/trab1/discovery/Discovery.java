@@ -2,7 +2,6 @@ package sd1920.trab1.discovery;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.URI;
@@ -52,7 +51,7 @@ public class Discovery {
 	private String serviceName;
 	private String serviceURI;
 
-	private static Map<String, String> urls = new HashMap<>();
+	protected static Map<String, String> urls = new HashMap<>();
 
 	/**
 	 * @param serviceName the name of the service to announce
@@ -101,11 +100,10 @@ public class Discovery {
 						String msg = new String(pkt.getData(), 0, pkt.getLength());
 						String[] msgElems = msg.split(DELIMITER);
 						if (msgElems.length == 2) { // periodic announcement
-							// System.out.printf("FROM %s (%s) : %s\n",
-							// pkt.getAddress().getCanonicalHostName(),
-							// pkt.getAddress().getHostAddress(), msg);
+							/*System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
+									pkt.getAddress().getHostAddress(), msg);*/
 							knownUrisOf(msgElems[1]);
-							urls.put(pkt.getAddress().getHostName(), msgElems[1]);
+							urls.put(pkt.getAddress().getCanonicalHostName(), msgElems[1]);
 						}
 					} catch (IOException e) {
 					}
