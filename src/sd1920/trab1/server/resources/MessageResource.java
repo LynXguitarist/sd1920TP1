@@ -250,13 +250,17 @@ public class MessageResource implements MessageService {
 
 	@Override
 	public void addMessageToInbox(long newID, String name, Message msg) {
-		Log.info("Received message with ID " + newID + " from another domain.");
-		Log.info("Adding msg to " + name + "inbox.");
-		if (!userInboxs.containsKey(name))
-			userInboxs.put(name, new HashSet<Long>());
+		try {
+			Log.info("Received message with ID " + newID + " from another domain.");
+			Log.info("Adding msg to " + name + "inbox.");
+			if (!userInboxs.containsKey(name))
+				userInboxs.put(name, new HashSet<Long>());
 
-		userInboxs.get(name).add(newID);
-		allMessages.put(newID, msg);
+			userInboxs.get(name).add(newID);
+			allMessages.put(newID, msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	// --------------------------------Private_Methods------------------------------------//
@@ -266,18 +270,21 @@ public class MessageResource implements MessageService {
 	}
 
 	private void sendMessage(String domain, long newID, String name, Message msg) {
+		try {
+			String mid = String.valueOf(newID);
 
-		String mid = String.valueOf(newID);
+			ClientConfig config = new ClientConfig();
+			Client client = ClientBuilder.newClient(config);
+			String serverUrl = Discovery.getUrl(domain);
 
-		ClientConfig config = new ClientConfig();
-		Client client = ClientBuilder.newClient(config);
-		String serverUrl = Discovery.getUrl(domain);
+			Log.info("Conecting to... " + serverUrl);
 
-		Log.info("Conecting to... " + serverUrl);
-
-		WebTarget target = client.target(serverUrl).path(MessageService.PATH);
-		target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)
-				.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
+			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+			target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)
+					.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
