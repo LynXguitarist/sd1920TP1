@@ -104,10 +104,10 @@ public class Discovery {
 							/*System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
 									pkt.getAddress().getHostAddress(), msg);*/
 							knownUrisOf(msgElems[1]);
-							if(msgElems[1].contains(".sdnet"))
-								msgElems[1] = msgElems[1].split(".")[0];
+							if(msgElems[0].contains(".sdnet"))
+								msgElems[0] = msgElems[0].split(".")[0];
 							
-							Log.info("Putting domain... "+msgElems[1]);
+							Log.info("Putting domain... "+msgElems[0]);
 							urls.put(pkt.getAddress().getCanonicalHostName(), msgElems[1]);
 						}
 					} catch (IOException e) {
