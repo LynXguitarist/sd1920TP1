@@ -104,6 +104,14 @@ public class Discovery {
 							/*System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
 									pkt.getAddress().getHostAddress(), msg);*/
 							knownUrisOf(msgElems[1]);
+							
+							URI tmp = URI.create(msgElems[1]);
+							Log.info("Domain in URI = "+tmp.toString());
+							
+							if(msgElems[1].contains(".sdnet"))
+								msgElems[1] = msgElems[1].split(".")[0];
+							
+							
 							urls.put(pkt.getAddress().getCanonicalHostName(), msgElems[1]);
 						}
 					} catch (IOException e) {
@@ -133,6 +141,7 @@ public class Discovery {
 	public static String getUrl(String domain) {
 		for(Entry<String, String>entry : urls.entrySet())
 			System.out.println("key = "+entry.getKey()+" - "+entry.getValue());
+		
 		return urls.get(domain);
 	}
 
