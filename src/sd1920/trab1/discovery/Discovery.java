@@ -101,15 +101,20 @@ public class Discovery {
 						String msg = new String(pkt.getData(), 0, pkt.getLength());
 						String[] msgElems = msg.split(DELIMITER);
 						if (msgElems.length == 2) { // periodic announcement
-							/*System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
-									pkt.getAddress().getHostAddress(), msg);*/
+							/*
+							 * System.out.printf("FROM %s (%s) : %s\n",
+							 * pkt.getAddress().getCanonicalHostName(), pkt.getAddress().getHostAddress(),
+							 * msg);
+							 */
 							knownUrisOf(msgElems[1]);
 							String domain = pkt.getAddress().getCanonicalHostName();
-							Log.info("Hostname = "+pkt.getAddress().getHostName());
-							if(domain.contains(".sdnet"))
+
+							Log.info("Hostname = " + pkt.getAddress().getHostName());
+
+							if (domain.contains(".sdnet"))
 								domain = domain.split(".")[0];
-							
-							Log.info("Putting domain... "+domain);
+
+							Log.info("Putting domain... " + domain);
 							urls.put(domain, msgElems[1]);
 						}
 					} catch (IOException e) {
@@ -137,9 +142,9 @@ public class Discovery {
 	}
 
 	public static String getUrl(String domain) {
-		for(Entry<String, String>entry : urls.entrySet())
-			System.out.println("key = "+entry.getKey()+" - "+entry.getValue());
-		
+		for (Entry<String, String> entry : urls.entrySet())
+			System.out.println("key = " + entry.getKey() + " - " + entry.getValue());
+
 		return urls.get(domain);
 	}
 
