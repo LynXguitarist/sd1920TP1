@@ -109,9 +109,8 @@ public class Discovery {
 							knownUrisOf(msgElems[1]);
 							String domain = pkt.getAddress().getCanonicalHostName();
 
-							Log.info("Hostname = " + pkt.getAddress().getHostName());
-
-							if (domain.contains(".sdnet"))
+							Log.info("Domain at begin... " + domain);
+							if (domain.contains("."))
 								domain = domain.split(".")[0];
 
 							Log.info("Putting domain... " + domain);
