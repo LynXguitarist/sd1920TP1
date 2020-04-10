@@ -92,6 +92,7 @@ public class MessageResource implements MessageService {
 				}
 
 				if (!sender.getDomain().equals(domain)) {
+					Log.info("Domain is..."+ domain);
 					sendMessage(domain, newID, recipient, msg);// calls the server from the recipient domain
 				} else {
 					if (!userInboxs.containsKey(recipient))

@@ -103,7 +103,7 @@ public class Discovery {
 							/*System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
 									pkt.getAddress().getHostAddress(), msg);*/
 							knownUrisOf(msgElems[1]);
-							urls.put(pkt.getAddress().getCanonicalHostName(), msgElems[1]);
+							urls.put(msgElems[0], msgElems[1]);
 						}
 					} catch (IOException e) {
 					}
