@@ -101,7 +101,7 @@ public class UserResource implements UserService {
 			old_user = allusers.get(name);
 		}
 
-		if (user != null)
+		if (old_user != null)
 			old_pwd = old_user.getPwd();
 
 		if (old_user == null) {// sees if the user exists
