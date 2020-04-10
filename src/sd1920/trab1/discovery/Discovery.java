@@ -108,14 +108,14 @@ public class Discovery {
 							 */
 							knownUrisOf(msgElems[1]);
 							String domain = pkt.getAddress().getCanonicalHostName();
-
-							Log.info("DIS: Domain at begin... " + domain);
+							
+							//Log.info("DIS: Domain at begin... " + domain);
 							if (domain.indexOf('.') != -1) {
-								Log.info("DIS: Entrou no if");
+								//Log.info("DIS: Entrou no if");
 								domain = domain.substring(0, domain.indexOf('.'));
 							}
 
-							Log.info("DIS: Putting domain... " + domain);
+							//Log.info("DIS: Putting domain... " + domain);
 							urls.put(domain, msgElems[1]);
 						}
 					} catch (IOException e) {

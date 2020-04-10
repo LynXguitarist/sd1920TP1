@@ -92,7 +92,7 @@ public class MessageResource implements MessageService {
 				}
 
 				if (!sender.getDomain().equals(domain)) {
-					Log.info("MR: Domain is..."+ domain);
+					//Log.info("MR: Domain is..."+ domain);
 					sendMessage(domain, newID, recipient, msg);// calls the server from the recipient domain
 				} else {
 					if (!userInboxs.containsKey(recipient))
@@ -278,7 +278,7 @@ public class MessageResource implements MessageService {
 			Client client = ClientBuilder.newClient(config);
 			String serverUrl = Discovery.getUrl(domain);
 
-			Log.info("MR: Conecting to... " + serverUrl);
+			//Log.info("MR: Conecting to... " + serverUrl);
 
 			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
 			target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)

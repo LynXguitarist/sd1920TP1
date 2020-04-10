@@ -49,7 +49,6 @@ public class UserResource implements UserService {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
 		} else if (Discovery.getUrl(domain) == null) {
-			Log.info("Domain = "+domain+" - "+Discovery.getUrl(domain));
 			Log.info("User domain is different then the server domain.");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
