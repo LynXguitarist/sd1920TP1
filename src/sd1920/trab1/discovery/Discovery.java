@@ -105,6 +105,7 @@ public class Discovery {
 									pkt.getAddress().getHostAddress(), msg);*/
 							knownUrisOf(msgElems[1]);
 							String domain = pkt.getAddress().getCanonicalHostName();
+							Log.info("Hostname = "+pkt.getAddress().getHostName());
 							if(domain.contains(".sdnet"))
 								domain = domain.split(".")[0];
 							
