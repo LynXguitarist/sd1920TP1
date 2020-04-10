@@ -49,7 +49,7 @@ public class UserResource implements UserService {
 			Log.info("Pwd or domain or username is null.");
 			throw new WebApplicationException(Status.CONFLICT);
 		} else if (Discovery.getUrl(domain) == null) {
-			Log.info("Domain = "+domain+"- "+Discovery.getUrl(domain));
+			Log.info("Domain = "+domain+" - "+Discovery.getUrl(domain));
 			Log.info("User domain is different then the server domain.");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
@@ -102,7 +102,7 @@ public class UserResource implements UserService {
 		}
 
 		if (user != null)
-			old_pwd = user.getPwd();
+			old_pwd = old_user.getPwd();
 
 		if (old_user == null) {// sees if the user exists
 			Log.info("User doesn't exist.");

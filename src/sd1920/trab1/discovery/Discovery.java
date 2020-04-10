@@ -7,6 +7,7 @@ import java.net.MulticastSocket;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 /**
@@ -103,7 +104,7 @@ public class Discovery {
 							/*System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
 									pkt.getAddress().getHostAddress(), msg);*/
 							knownUrisOf(msgElems[1]);
-							urls.put(msgElems[0], msgElems[1]);
+							urls.put(pkt.getAddress().getCanonicalHostName(), msgElems[1]);
 						}
 					} catch (IOException e) {
 					}
@@ -130,6 +131,8 @@ public class Discovery {
 	}
 
 	public static String getUrl(String domain) {
+		for(Entry<String, String>entry : urls.entrySet())
+			System.out.println("key = "+entry.getKey()+" - "+entry.getValue());
 		return urls.get(domain);
 	}
 
