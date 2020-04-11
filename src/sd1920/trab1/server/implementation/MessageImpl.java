@@ -1,6 +1,5 @@
 package sd1920.trab1.server.implementation;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,19 +13,12 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.jws.WebService;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
 
-import org.glassfish.jersey.client.ClientConfig;
-
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
-import sd1920.trab1.api.rest.MessageService;
 import sd1920.trab1.api.soap.MessageServiceSoap;
 import sd1920.trab1.api.soap.MessagesException;
 import sd1920.trab1.discovery.Discovery;
@@ -95,13 +87,7 @@ public class MessageImpl implements MessageServiceSoap {
 
 				if (!sender.getDomain().equals(domain)) {
 					// Log.info("MR: Domain is..."+ domain);
-					try {
-						// calls the server from the recipient domain
-						sendMessage(domain, newID, recipient, msg);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					sendMessage(domain, newID, recipient, msg);
 				} else {
 					if (!userInboxs.containsKey(recipient))
 						userInboxs.put(recipient, new HashSet<Long>());
@@ -258,8 +244,9 @@ public class MessageImpl implements MessageServiceSoap {
 					if (domain.equals(sender.getDomain())) {
 						Log.info("MR: Deleting from this domain, from userInbox: " + name + " message: " + mid);
 						userInboxs.get(name).remove(mid);
-					} else
-						sendDelete(domain, mid);// calls other server
+					} else {
+						sendDelete(domain, mid);
+					}
 				}
 				allMessages.remove(mid);
 			}
@@ -284,7 +271,16 @@ public class MessageImpl implements MessageServiceSoap {
 
 	@Override
 	public void deleteMessageInOtherServers(long mid) {
-		// TODO Auto-generated method stub
+		try {
+			Log.info("Received request from another domain.");
+			Log.info("Deleting message with id: " + mid);
+			for (Entry<String, Set<Long>> entry : userInboxs.entrySet())
+				entry.getValue().remove(mid);
+
+			allMessages.remove(mid);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -294,7 +290,7 @@ public class MessageImpl implements MessageServiceSoap {
 		return userInboxs;
 	}
 
-	private void sendMessage(String domain, long newID, String name, Message msg) throws IOException {
+	private void sendMessage(String domain, long newID, String name, Message msg) {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUrl(domain);
@@ -307,6 +303,8 @@ public class MessageImpl implements MessageServiceSoap {
 		} catch (WebServiceException wse) {
 			System.err.println("Could not contact server: " + wse.getMessage());
 			System.exit(1);// Terminates client
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		// Set Timeouts
 		/*
@@ -319,15 +317,18 @@ public class MessageImpl implements MessageServiceSoap {
 	}
 
 	private void sendDelete(String domain, long mid) {
+		MessageServiceSoap messages = null;
 		try {
-			String s_mid = String.valueOf(mid);
-
-			ClientConfig config = new ClientConfig();
-			Client client = ClientBuilder.newClient(config);
 			String serverUrl = Discovery.getUrl(domain);
 
-			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
-			target.path("/otherdomain").path(s_mid).request().accept(MediaType.APPLICATION_JSON).delete();
+			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);
+			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);
+			messages = service.getPort(sd1920.trab1.api.soap.MessageServiceSoap.class);
+			messages.deleteMessageInOtherServers(mid);
+
+		} catch (WebServiceException wse) {
+			System.err.println("Could not contact server: " + wse.getMessage());
+			System.exit(1);// Terminates client
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
