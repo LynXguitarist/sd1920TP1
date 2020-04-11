@@ -245,15 +245,18 @@ public class MessageResource implements MessageService {
 				Map<String, String> domains = new HashMap<>(m.getDestination().size());
 
 				for (String recipient : m.getDestination()) {
-					String domain = recipient.substring(recipient.indexOf("@"), recipient.length());
+					String[] name_domain = recipient.split("@");
+					String name = name_domain[0];
+					String domain = name_domain[1];
+
 					// if domain doesnt exist or is the current domain
 					if (!domains.containsValue(domain) || domain.equals(Discovery.getUrl(sender.getDomain())))
-						domains.put(recipient, domain);
+						domains.put(name, domain);
 				}
 
 				for (Entry<String, String> entry : domains.entrySet()) {
-					String domain = entry.getValue();
 					String name = entry.getKey();
+					String domain = entry.getValue();
 
 					if (domain.equals(sender.getDomain()))
 						userInboxs.get(name).remove(mid);

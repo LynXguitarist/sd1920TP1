@@ -233,12 +233,30 @@ public class MessageImpl implements MessageServiceSoap {
 			// checks if the user is the sender of this message
 			if (m_sender.contains(user)) {
 				Log.info("Deleting message with id: " + mid);
-				for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
-					entry.getValue().remove(mid);
+				// map that holds all users from the current domain and the domains
+				Map<String, String> domains = new HashMap<>(m.getDestination().size());
+
+				for (String recipient : m.getDestination()) {
+					String[] name_domain = recipient.split("@");
+					String name = name_domain[0];
+					String domain = name_domain[1];
+
+					// if domain doesnt exist or is the current domain
+					if (!domains.containsValue(domain) || domain.equals(Discovery.getUrl(sender.getDomain())))
+						domains.put(name, domain);
+				}
+
+				for (Entry<String, String> entry : domains.entrySet()) {
+					String name = entry.getKey();
+					String domain = entry.getValue();
+
+					if (domain.equals(sender.getDomain()))
+						userInboxs.get(name).remove(mid);
+					else
+						sendDelete(domain, mid);// calls other server
 				}
 				allMessages.remove(mid);
 			}
-
 		}
 	}
 
