@@ -227,7 +227,7 @@ public class MessageResource implements MessageService {
 		}
 
 		Log.info("Received request to delete message with id: " + mid + ".");
-		Log.info("User requesting = " + user);
+		Log.info("MR: User requesting delete = " + user);
 
 		Message m = null;
 		String m_sender = "";
@@ -240,7 +240,8 @@ public class MessageResource implements MessageService {
 		if (m != null) {
 			// checks if the user is the sender of this message
 			if (m_sender.contains(user)) {
-				Log.info("Deleting message with id: " + mid);
+
+				Log.info("Deleting message with id: " + mid + " in domain: " + sender.getDomain());
 				// map that holds all users from the current domain and the domains
 				Map<String, String> domains = new HashMap<>(m.getDestination().size());
 
@@ -249,8 +250,10 @@ public class MessageResource implements MessageService {
 					String name = name_domain[0];
 					String domain = name_domain[1];
 					Log.info("MR: Name before if: " + name + " in domain: " + domain);
+
+					Log.info("Same domain: " + domain.equals(sender.getDomain()));
 					// if domain doesnt exist or is the current domain
-					if (!domains.containsValue(domain) || domain.equals(Discovery.getUrl(sender.getDomain()))) {
+					if (!domains.containsValue(domain) || domain.equals(sender.getDomain())) {
 						Log.info("MR: Adding to Map: " + name + " - " + domain);
 						domains.put(name, domain);
 					}
