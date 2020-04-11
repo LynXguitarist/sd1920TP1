@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
+
 import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
@@ -92,7 +93,7 @@ public class MessageResource implements MessageService {
 				}
 
 				if (!sender.getDomain().equals(domain)) {
-					//Log.info("MR: Domain is..."+ domain);
+					// Log.info("MR: Domain is..."+ domain);
 					sendMessage(domain, newID, recipient, msg);// calls the server from the recipient domain
 				} else {
 					if (!userInboxs.containsKey(recipient))
@@ -240,12 +241,27 @@ public class MessageResource implements MessageService {
 			// checks if the user is the sender of this message
 			if (m_sender.contains(user)) {
 				Log.info("Deleting message with id: " + mid);
-				for (Entry<String, Set<Long>> entry : userInboxs.entrySet()) {
-					entry.getValue().remove(mid);
+				// map that holds all users from the current domain and the domains
+				Map<String, String> domains = new HashMap<>(m.getDestination().size());
+
+				for (String recipient : m.getDestination()) {
+					String domain = recipient.substring(recipient.indexOf("@"), recipient.length());
+					// if domain doesnt exist or is the current domain
+					if (!domains.containsValue(domain) || domain.equals(Discovery.getUrl(sender.getDomain())))
+						domains.put(recipient, domain);
+				}
+
+				for (Entry<String, String> entry : domains.entrySet()) {
+					String domain = entry.getValue();
+					String name = entry.getKey();
+
+					if (domain.equals(sender.getDomain()))
+						userInboxs.get(name).remove(mid);
+					else
+						sendDelete(domain, mid);// calls other server
 				}
 				allMessages.remove(mid);
 			}
-
 		}
 	}
 
@@ -259,6 +275,20 @@ public class MessageResource implements MessageService {
 
 			userInboxs.get(name).add(newID);
 			allMessages.put(newID, msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void deleteMessageInOtherServers(long mid) {
+		try {
+			Log.info("Received request from another domain.");
+			Log.info("Deleting message with id: " + mid);
+			for (Entry<String, Set<Long>> entry : userInboxs.entrySet())
+				entry.getValue().remove(mid);
+
+			allMessages.remove(mid);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -278,11 +308,24 @@ public class MessageResource implements MessageService {
 			Client client = ClientBuilder.newClient(config);
 			String serverUrl = Discovery.getUrl(domain);
 
-			//Log.info("MR: Conecting to... " + serverUrl);
-
 			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
 			target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)
 					.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void sendDelete(String domain, long mid) {
+		try {
+			String s_mid = String.valueOf(mid);
+
+			ClientConfig config = new ClientConfig();
+			Client client = ClientBuilder.newClient(config);
+			String serverUrl = Discovery.getUrl(domain);
+
+			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+			target.path("/otherdomain").path(s_mid).request().accept(MediaType.APPLICATION_JSON).delete();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

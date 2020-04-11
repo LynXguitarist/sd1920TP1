@@ -96,9 +96,27 @@ public interface MessageService {
 	@Path("/msg/{user}/{mid}")
 	void deleteMessage(@PathParam("user") String user, @PathParam("mid") long mid, @QueryParam("pwd") String pwd);
 
+	/**
+	 * sends message to other server
+	 * 
+	 * @param newID id of the message to send
+	 * @param name  user that receives the message
+	 * @param msg   message to be sent
+	 */
 	@POST
 	@Path("/otherdomain/{newID}/{name}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	void addMessageToInbox(@PathParam("newID") long newID, @PathParam("name") String name, Message msg);
+
+	/**
+	 * deletes the message in users with a domain differente from the current domain
+	 * 
+	 * @param mid  id of the message to be deleted
+	 * @param name name of the user that holds that message
+	 */
+	@DELETE
+	@Path("/otherdomain/{mid}")
+	void deleteMessageInOtherServers(@PathParam("mid") long mid);
+
 }
