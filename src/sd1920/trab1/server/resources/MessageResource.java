@@ -248,7 +248,7 @@ public class MessageResource implements MessageService {
 					String[] name_domain = recipient.split("@");
 					String name = name_domain[0];
 					String domain = name_domain[1];
-
+					Log.info("MR: Name before if: " + name + " in domain: " + domain);
 					// if domain doesnt exist or is the current domain
 					if (!domains.containsValue(domain) || domain.equals(Discovery.getUrl(sender.getDomain()))) {
 						Log.info("MR: Adding to Map: " + name + " - " + domain);
