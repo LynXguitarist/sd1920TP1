@@ -78,4 +78,24 @@ public interface MessageServiceSoap {
 	 */
 	@WebMethod
 	void deleteMessage(String user, String pwd, long mid) throws MessagesException;
+
+	/**
+	 * sends message to other server
+	 * 
+	 * @param newID id of the message to send
+	 * @param name  user that receives the message
+	 * @param msg   message to be sent
+	 */
+	@WebMethod
+	void addMessageToInbox(long newID, String name, Message msg);
+
+	/**
+	 * deletes the message in users with a domain differente from the current domain
+	 * 
+	 * @param mid  id of the message to be deleted
+	 * @param name name of the user that holds that message
+	 */
+	@WebMethod
+	void deleteMessageInOtherServers(long mid);
+
 }

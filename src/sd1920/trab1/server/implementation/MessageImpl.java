@@ -1,5 +1,7 @@
 package sd1920.trab1.server.implementation;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,11 +14,22 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.jws.WebService;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import javax.xml.ws.WebServiceException;
+
+import org.glassfish.jersey.client.ClientConfig;
 
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
+import sd1920.trab1.api.rest.MessageService;
 import sd1920.trab1.api.soap.MessageServiceSoap;
 import sd1920.trab1.api.soap.MessagesException;
+import sd1920.trab1.discovery.Discovery;
 import sd1920.trab1.server.resources.MessageResource;
 import sd1920.trab1.server.utils.MessageUtills;
 
@@ -30,6 +43,8 @@ public class MessageImpl implements MessageServiceSoap {
 	private Random randomNumberGenerator;
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
+
+	private static final String MESSAGES_WSDL = "/messages/?wsdl";
 
 	public MessageImpl() {
 		this.randomNumberGenerator = new Random(System.currentTimeMillis());
@@ -71,13 +86,28 @@ public class MessageImpl implements MessageServiceSoap {
 		synchronized (this) {
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
-				if (recipient.contains("@"))
-					recipient = recipient.substring(0, recipient.indexOf("@"));
 
-				if (!userInboxs.containsKey(recipient)) {
-					userInboxs.put(recipient, new HashSet<Long>());
+				String domain = "";
+				if (recipient.contains("@")) {
+					domain = recipient.split("@")[1];
+					recipient = recipient.substring(0, recipient.indexOf("@"));
 				}
-				userInboxs.get(recipient).add(newID);
+
+				if (!sender.getDomain().equals(domain)) {
+					// Log.info("MR: Domain is..."+ domain);
+					try {
+						// calls the server from the recipient domain
+						sendMessage(domain, newID, recipient, msg);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					if (!userInboxs.containsKey(recipient))
+						userInboxs.put(recipient, new HashSet<Long>());
+
+					userInboxs.get(recipient).add(newID);
+				}
 			}
 		}
 
@@ -183,14 +213,13 @@ public class MessageImpl implements MessageServiceSoap {
 	public void deleteMessage(String user, String pwd, long mid) throws MessagesException {
 
 		User sender = allusers.get(user);
-		
-		
+
 		if (pwd == null)
 			pwd = "";
 
 		if (sender == null || !pwd.equals(sender.getPwd()))
 			throw new MessagesException();
-		
+
 		Log.info("Received request to delete message with id: " + mid + ".");
 		Message m = null;
 		String m_sender = "";
@@ -213,8 +242,71 @@ public class MessageImpl implements MessageServiceSoap {
 		}
 	}
 
+	@Override
+	public void addMessageToInbox(long newID, String name, Message msg) {
+		try {
+			Log.info("Received message with ID " + newID + " from another domain.");
+			Log.info("Adding msg to " + name + "inbox.");
+			if (!userInboxs.containsKey(name))
+				userInboxs.put(name, new HashSet<Long>());
+
+			userInboxs.get(name).add(newID);
+			allMessages.put(newID, msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void deleteMessageInOtherServers(long mid) {
+		// TODO Auto-generated method stub
+
+	}
+
+	// --------------------------------Private_Methods------------------------------------//
+
 	protected static Map<String, Set<Long>> getUserInbox() {
 		return userInboxs;
+	}
+
+	private void sendMessage(String domain, long newID, String name, Message msg) throws IOException {
+		MessageServiceSoap messages = null;
+		try {
+			String serverUrl = Discovery.getUrl(domain);
+
+			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);
+			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);
+			messages = service.getPort(sd1920.trab1.api.soap.MessageServiceSoap.class);
+			messages.addMessageToInbox(newID, name, msg);
+
+		} catch (WebServiceException wse) {
+			System.err.println("Could not contact server: " + wse.getMessage());
+			System.exit(1);// Terminates client
+		}
+		// Set Timeouts
+		/*
+		 * ((BindingProvider)
+		 * messages).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT,
+		 * CONNECTION_TIMEOUT); ((BindingProvider)
+		 * messages).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT,
+		 * REPLY_TIMEOUT);
+		 */
+	}
+
+	private void sendDelete(String domain, long mid) {
+		try {
+			String s_mid = String.valueOf(mid);
+
+			ClientConfig config = new ClientConfig();
+			Client client = ClientBuilder.newClient(config);
+			String serverUrl = Discovery.getUrl(domain);
+
+			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+			target.path("/otherdomain").path(s_mid).request().accept(MediaType.APPLICATION_JSON).delete();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
