@@ -290,13 +290,17 @@ public class MessageImpl implements MessageServiceSoap {
 		return userInboxs;
 	}
 
-	private void sendMessage(String domain, long newID, String name, Message msg) {
+	public static void sendMessage(String domain, long newID, String name, Message msg) {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUrl(domain);
+			// if service is different
+			if (serverUrl.contains("/rest"))
+				MessageResource.sendMessage(domain, newID, name, msg);
 
 			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);
 			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);
+
 			messages = service.getPort(sd1920.trab1.api.soap.MessageServiceSoap.class);
 			messages.addMessageToInbox(newID, name, msg);
 
@@ -316,13 +320,17 @@ public class MessageImpl implements MessageServiceSoap {
 		 */
 	}
 
-	private void sendDelete(String domain, long mid) {
+	public static void sendDelete(String domain, long mid) {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUrl(domain);
+			// if service is different
+			if (serverUrl.contains("/rest"))
+				MessageResource.sendDelete(domain, mid);
 
 			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);
 			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);
+
 			messages = service.getPort(sd1920.trab1.api.soap.MessageServiceSoap.class);
 			messages.deleteMessageInOtherServers(mid);
 

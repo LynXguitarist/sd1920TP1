@@ -26,6 +26,7 @@ import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
 import sd1920.trab1.api.rest.MessageService;
 import sd1920.trab1.discovery.Discovery;
+import sd1920.trab1.server.implementation.MessageImpl;
 import sd1920.trab1.server.utils.MessageUtills;
 
 @Singleton
@@ -309,13 +310,18 @@ public class MessageResource implements MessageService {
 		return userInboxs;
 	}
 
-	private void sendMessage(String domain, long newID, String name, Message msg) {
+	public static void sendMessage(String domain, long newID, String name, Message msg) {
+
 		try {
+			String serverUrl = Discovery.getUrl(domain);
+			// if service is different
+			if (serverUrl.contains("/soap"))
+				MessageImpl.sendMessage(domain, newID, name, msg);
+
 			String mid = String.valueOf(newID);
 
 			ClientConfig config = new ClientConfig();
 			Client client = ClientBuilder.newClient(config);
-			String serverUrl = Discovery.getUrl(domain);
 
 			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
 			target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)
@@ -325,13 +331,17 @@ public class MessageResource implements MessageService {
 		}
 	}
 
-	private void sendDelete(String domain, long mid) {
+	public static void sendDelete(String domain, long mid) {
 		try {
+			String serverUrl = Discovery.getUrl(domain);
+			// if service is different
+			if (serverUrl.contains("/soap"))
+				MessageImpl.sendDelete(domain, mid);
+
 			String s_mid = String.valueOf(mid);
 
 			ClientConfig config = new ClientConfig();
 			Client client = ClientBuilder.newClient(config);
-			String serverUrl = Discovery.getUrl(domain);
 
 			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
 			target.path("/otherdomain").path(s_mid).request().accept(MediaType.APPLICATION_JSON).delete();
