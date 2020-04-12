@@ -94,7 +94,7 @@ public class MessageResource implements MessageService {
 				}
 
 				if (!sender.getDomain().equals(domain)) {
-					Log.info("MR: Domain is..."+ domain);
+					Log.info("MR: Domain is..." + domain);
 					sendMessage(domain, newID, recipient, msg);// calls the server from the recipient domain
 				} else {
 					if (!userInboxs.containsKey(recipient))
@@ -283,9 +283,11 @@ public class MessageResource implements MessageService {
 			if (!userInboxs.containsKey(name))
 				userInboxs.put(name, new HashSet<Long>());
 
+			Log.info("MR: Passou do if");
 			userInboxs.get(name).add(newID);
 			allMessages.put(newID, msg);
 		} catch (Exception e) {
+			Log.info("MR: Rebentou np addmessageToInbox exception");
 			e.printStackTrace();
 		}
 	}
