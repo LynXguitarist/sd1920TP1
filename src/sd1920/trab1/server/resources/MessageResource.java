@@ -87,20 +87,20 @@ public class MessageResource implements MessageService {
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
 
-				String domain = "";
-				if (recipient.contains("@")) {
-					domain = recipient.split("@")[1];
-					recipient = recipient.substring(0, recipient.indexOf("@"));
-				}
+				String[] name_domain = recipient.split("@");
+				String name = name_domain[0];
+				String domain = name_domain[1];
 
+				Log.info("MR: User: " + name + " in domain: " + domain);
+				
 				if (!sender.getDomain().equals(domain)) {
 					Log.info("MR: Domain is..." + domain);
-					sendMessage(domain, newID, recipient, msg);// calls the server from the recipient domain
+					sendMessage(domain, newID, name, msg);// calls the server from the recipient domain
 				} else {
-					if (!userInboxs.containsKey(recipient))
-						userInboxs.put(recipient, new HashSet<Long>());
+					if (!userInboxs.containsKey(name))
+						userInboxs.put(name, new HashSet<Long>());
 
-					userInboxs.get(recipient).add(newID);
+					userInboxs.get(name).add(newID);
 				}
 			}
 		}
@@ -286,8 +286,9 @@ public class MessageResource implements MessageService {
 			Log.info("MR: Passou do if");
 			userInboxs.get(name).add(newID);
 			allMessages.put(newID, msg);
+			Log.info("MR: Fez tudo do addmessageToInbox");
 		} catch (Exception e) {
-			Log.info("MR: Rebentou np addmessageToInbox exception");
+			Log.info("MR: Rebentou no addmessageToInbox exception");
 			e.printStackTrace();
 		}
 	}

@@ -83,6 +83,8 @@ public class MessageImpl implements MessageServiceSoap {
 				String name = name_domain[0];
 				String domain = name_domain[1];
 
+				Log.info("MI: User: " + name + " in domain: " + domain);
+				
 				if (!sender.getDomain().equals(domain))
 					sendMessage(domain, newID, name, msg);
 				else {
