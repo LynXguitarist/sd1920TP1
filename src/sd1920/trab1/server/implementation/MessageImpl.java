@@ -293,7 +293,7 @@ public class MessageImpl implements MessageServiceSoap {
 	public static void sendMessage(String domain, long newID, String name, Message msg) {
 		MessageServiceSoap messages = null;
 		try {
-			String serverUrl = Discovery.getUrl(domain);
+			String serverUrl = Discovery.getUri(domain);
 			// if service is different
 			if (serverUrl.contains("/rest"))
 				MessageResource.sendMessage(domain, newID, name, msg);
@@ -323,10 +323,13 @@ public class MessageImpl implements MessageServiceSoap {
 	public static void sendDelete(String domain, long mid) {
 		MessageServiceSoap messages = null;
 		try {
-			String serverUrl = Discovery.getUrl(domain);
+			String serverUrl = Discovery.getUri(domain);
+			Log.info("MI: Trying to connect to rest server: " + serverUrl);
 			// if service is different
-			if (serverUrl.contains("/rest"))
+			if (serverUrl.contains("/rest")) {
+				Log.info("MI: Connecting to rest server: " + serverUrl);
 				MessageResource.sendDelete(domain, mid);
+			}
 
 			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);
 			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);

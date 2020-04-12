@@ -313,7 +313,7 @@ public class MessageResource implements MessageService {
 	public static void sendMessage(String domain, long newID, String name, Message msg) {
 
 		try {
-			String serverUrl = Discovery.getUrl(domain);
+			String serverUrl = Discovery.getUri(domain);
 			// if service is different
 			if (serverUrl.contains("/soap"))
 				MessageImpl.sendMessage(domain, newID, name, msg);
@@ -333,7 +333,7 @@ public class MessageResource implements MessageService {
 
 	public static void sendDelete(String domain, long mid) {
 		try {
-			String serverUrl = Discovery.getUrl(domain);
+			String serverUrl = Discovery.getUri(domain);
 			// if service is different
 			if (serverUrl.contains("/soap"))
 				MessageImpl.sendDelete(domain, mid);

@@ -50,7 +50,7 @@ public class UserImpl implements UserServiceSoap {
 
 		// Exceptions
 		if (hasUser || IsNullOrEmpty(name) || IsNullOrEmpty(pwd) || IsNullOrEmpty(domain)
-				|| Discovery.knownUrisOf(domain).length == 0) {
+				|| Discovery.getUri(domain) == null) {
 			Log.info("Error creating user.");
 			throw new MessagesException();
 		}
