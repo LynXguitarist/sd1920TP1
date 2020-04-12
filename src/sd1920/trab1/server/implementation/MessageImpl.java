@@ -253,20 +253,17 @@ public class MessageImpl implements MessageServiceSoap {
 	}
 
 	@Override
-	public synchronized void addMessageToInbox(long newID, String name, Message msg) {
+	public void addMessageToInbox(long newID, String name, Message msg) {
 		try {
 			Log.info("Received message with ID " + newID + " from another domain.");
 			Log.info("Adding msg to " + name + " inbox.");
 			if (!userInboxs.containsKey(name))
 				userInboxs.put(name, new HashSet<Long>());
 
-			Log.info("MI: Passou do if");
-
 			userInboxs.get(name).add(newID);
 			allMessages.put(newID, msg);
 
 		} catch (Exception e) {
-			Log.info("MI: Rebentou np addmessageToInbox exception");
 			e.printStackTrace();
 		}
 
@@ -293,14 +290,16 @@ public class MessageImpl implements MessageServiceSoap {
 		return userInboxs;
 	}
 
-	public static  void sendMessage(String domain, long newID, String name, Message msg) {
+	public static void sendMessage(String domain, long newID, String name, Message msg) {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
+			
 			// if service is different
 			if (serverUrl.contains("/rest")) {
 				Log.info("MI: Connecting to rest server: " + serverUrl);
 				MessageResource.sendMessage(domain, newID, name, msg);
+				return;
 			}
 
 			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);
@@ -310,11 +309,9 @@ public class MessageImpl implements MessageServiceSoap {
 			messages.addMessageToInbox(newID, name, msg);
 
 		} catch (WebServiceException wse) {
-			Log.info("MI: Rebentou no webexception wse");
 			System.err.println("Could not contact server: " + wse.getMessage());
 			System.exit(1);// Terminates client
 		} catch (Exception e) {
-			Log.info("MI: Rebentou na Exception e");
 			e.printStackTrace();
 		}
 		// Set Timeouts
@@ -331,7 +328,7 @@ public class MessageImpl implements MessageServiceSoap {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
-			Log.info("MI: Trying to connect to rest server: " + serverUrl);
+			
 			// if service is different
 			if (serverUrl.contains("/rest")) {
 				Log.info("MI: Connecting to rest server: " + serverUrl);

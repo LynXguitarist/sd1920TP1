@@ -276,7 +276,7 @@ public class MessageResource implements MessageService {
 	}
 
 	@Override
-	public synchronized void addMessageToInbox(long newID, String name, Message msg) {
+	public void addMessageToInbox(long newID, String name, Message msg) {
 		try {
 				Log.info("Received message with ID " + newID + " from another domain.");
 				Log.info("Adding msg to " + name + "inbox.");
@@ -287,7 +287,6 @@ public class MessageResource implements MessageService {
 				allMessages.put(newID, msg);
 
 		} catch (Exception e) {
-			Log.info("MR: Rebentou no addmessageToInbox exception");
 			e.printStackTrace();
 		}
 	}
@@ -317,10 +316,10 @@ public class MessageResource implements MessageService {
 		try {
 			String serverUrl = Discovery.getUri(domain);
 			// if service is different
-			Log.info("Trying to connect to server: " + serverUrl);
 			if (serverUrl.contains("/soap")) {
 				Log.info("Conecting to soap server: " + serverUrl);
 				MessageImpl.sendMessage(domain, newID, name, msg);
+				return;
 			}
 
 			String mid = String.valueOf(newID);
