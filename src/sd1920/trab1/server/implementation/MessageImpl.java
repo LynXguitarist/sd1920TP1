@@ -76,23 +76,20 @@ public class MessageImpl implements MessageServiceSoap {
 		MessageUtills.printMessage(allMessages.get(newID));
 
 		synchronized (this) {
+
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
+				String[] name_domain = recipient.split("@");
+				String name = name_domain[0];
+				String domain = name_domain[1];
 
-				String domain = "";
-				if (recipient.contains("@")) {
-					domain = recipient.split("@")[1];
-					recipient = recipient.substring(0, recipient.indexOf("@"));
-				}
-				
-				if (!sender.getDomain().equals(domain)) {
-					Log.info("MI: Domain is..."+ domain);
-					sendMessage(domain, newID, recipient, msg);
-				} else {
-					if (!userInboxs.containsKey(recipient))
-						userInboxs.put(recipient, new HashSet<Long>());
+				if (!sender.getDomain().equals(domain))
+					sendMessage(domain, newID, name, msg);
+				else {
+					if (!userInboxs.containsKey(name))
+						userInboxs.put(name, new HashSet<Long>());
 
-					userInboxs.get(recipient).add(newID);
+					userInboxs.get(name).add(newID);
 				}
 			}
 		}
@@ -257,7 +254,7 @@ public class MessageImpl implements MessageServiceSoap {
 	public void addMessageToInbox(long newID, String name, Message msg) {
 		try {
 			Log.info("Received message with ID " + newID + " from another domain.");
-			Log.info("Adding msg to " + name + "inbox.");
+			Log.info("Adding msg to " + name + " inbox.");
 			if (!userInboxs.containsKey(name))
 				userInboxs.put(name, new HashSet<Long>());
 
@@ -294,7 +291,6 @@ public class MessageImpl implements MessageServiceSoap {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
-			Log.info("MI: Trying to connect to: " + serverUrl);
 			// if service is different
 			if (serverUrl.contains("/rest")) {
 				Log.info("MI: Connecting to rest server: " + serverUrl);
@@ -308,9 +304,11 @@ public class MessageImpl implements MessageServiceSoap {
 			messages.addMessageToInbox(newID, name, msg);
 
 		} catch (WebServiceException wse) {
+			Log.info("MI: Rebentou no webexception wse");
 			System.err.println("Could not contact server: " + wse.getMessage());
 			System.exit(1);// Terminates client
 		} catch (Exception e) {
+			Log.info("MI: Rebentou na Exception e");
 			e.printStackTrace();
 		}
 		// Set Timeouts
