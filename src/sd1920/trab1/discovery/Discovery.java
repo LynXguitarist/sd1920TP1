@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -104,9 +103,10 @@ public class Discovery {
 							if (domain.indexOf('.') != -1)
 								domain = domain.substring(0, domain.indexOf('.'));
 
-							System.out.printf("FROM %s (%s) : %s\n", domain, pkt.getAddress().getHostAddress(), msg);
+							System.out.printf("FROM %s (%s) : %s\n", domain,
+									pkt.getAddress().getHostAddress(), msg);
+
 							
-							knownUrisOf(msgElems[1]);
 							urls.put(domain, msgElems[1]);
 						}
 					} catch (IOException e) {
@@ -118,20 +118,6 @@ public class Discovery {
 		}
 	}
 
-	/**
-	 * Returns the known servers for a service.
-	 * 
-	 * @param serviceName the name of the service being discovered
-	 * @return an array of URI with the service instances discovered.
-	 * 
-	 */
-	public static URI[] knownUrisOf(String serviceName) {// apagar isto
-		Map<URI, Long> results = new HashMap<>();
-		if (!serviceName.contains(" ")) {
-			results.put(URI.create(serviceName), System.currentTimeMillis());
-		}
-		return results.keySet().toArray(new URI[0]);
-	}
 
 	public static String getUri(String domain) {
 		return urls.get(domain);
