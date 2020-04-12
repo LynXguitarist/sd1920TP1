@@ -94,7 +94,7 @@ public class MessageResource implements MessageService {
 				}
 
 				if (!sender.getDomain().equals(domain)) {
-					// Log.info("MR: Domain is..."+ domain);
+					Log.info("MR: Domain is..."+ domain);
 					sendMessage(domain, newID, recipient, msg);// calls the server from the recipient domain
 				} else {
 					if (!userInboxs.containsKey(recipient))
@@ -315,8 +315,11 @@ public class MessageResource implements MessageService {
 		try {
 			String serverUrl = Discovery.getUri(domain);
 			// if service is different
-			if (serverUrl.contains("/soap"))
+			Log.info("Trying to connect to server: " + serverUrl);
+			if (serverUrl.contains("/soap")) {
+				Log.info("Conecting to soap server: " + serverUrl);
 				MessageImpl.sendMessage(domain, newID, name, msg);
+			}
 
 			String mid = String.valueOf(newID);
 

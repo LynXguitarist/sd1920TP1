@@ -84,7 +84,7 @@ public class MessageImpl implements MessageServiceSoap {
 					domain = recipient.split("@")[1];
 					recipient = recipient.substring(0, recipient.indexOf("@"));
 				}
-
+				
 				if (!sender.getDomain().equals(domain)) {
 					Log.info("MI: Domain is..."+ domain);
 					sendMessage(domain, newID, recipient, msg);
@@ -294,7 +294,7 @@ public class MessageImpl implements MessageServiceSoap {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
-			Log.info("MI: Trying to connect to rest server: " + serverUrl);
+			Log.info("MI: Trying to connect to: " + serverUrl);
 			// if service is different
 			if (serverUrl.contains("/rest")) {
 				Log.info("MI: Connecting to rest server: " + serverUrl);
