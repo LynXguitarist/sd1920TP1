@@ -293,7 +293,7 @@ public class MessageImpl implements MessageServiceSoap {
 		return userInboxs;
 	}
 
-	public static synchronized void sendMessage(String domain, long newID, String name, Message msg) {
+	public static  void sendMessage(String domain, long newID, String name, Message msg) {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
