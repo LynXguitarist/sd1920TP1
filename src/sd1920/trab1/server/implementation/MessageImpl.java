@@ -84,7 +84,7 @@ public class MessageImpl implements MessageServiceSoap {
 				String domain = name_domain[1];
 
 				Log.info("MI: User: " + name + " in domain: " + domain);
-				
+
 				if (!sender.getDomain().equals(domain))
 					sendMessage(domain, newID, name, msg);
 				else {
@@ -255,15 +255,18 @@ public class MessageImpl implements MessageServiceSoap {
 	@Override
 	public void addMessageToInbox(long newID, String name, Message msg) {
 		try {
-			Log.info("Received message with ID " + newID + " from another domain.");
-			Log.info("Adding msg to " + name + " inbox.");
-			if (!userInboxs.containsKey(name))
-				userInboxs.put(name, new HashSet<Long>());
-			
-			Log.info("MI: Passou do if");
-			
-			userInboxs.get(name).add(newID);
-			allMessages.put(newID, msg);
+			synchronized (this) {
+				Log.info("Received message with ID " + newID + " from another domain.");
+				Log.info("Adding msg to " + name + " inbox.");
+				if (!userInboxs.containsKey(name))
+					userInboxs.put(name, new HashSet<Long>());
+
+				Log.info("MI: Passou do if");
+
+				userInboxs.get(name).add(newID);
+				allMessages.put(newID, msg);
+			}
+
 		} catch (Exception e) {
 			Log.info("MI: Rebentou np addmessageToInbox exception");
 			e.printStackTrace();

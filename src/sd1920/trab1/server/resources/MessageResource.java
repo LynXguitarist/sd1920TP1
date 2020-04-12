@@ -92,7 +92,7 @@ public class MessageResource implements MessageService {
 				String domain = name_domain[1];
 
 				Log.info("MR: User: " + name + " in domain: " + domain);
-				
+
 				if (!sender.getDomain().equals(domain)) {
 					Log.info("MR: Domain is..." + domain);
 					sendMessage(domain, newID, name, msg);// calls the server from the recipient domain
@@ -278,15 +278,18 @@ public class MessageResource implements MessageService {
 	@Override
 	public void addMessageToInbox(long newID, String name, Message msg) {
 		try {
-			Log.info("Received message with ID " + newID + " from another domain.");
-			Log.info("Adding msg to " + name + "inbox.");
-			if (!userInboxs.containsKey(name))
-				userInboxs.put(name, new HashSet<Long>());
+			synchronized (this) {
+				Log.info("Received message with ID " + newID + " from another domain.");
+				Log.info("Adding msg to " + name + "inbox.");
+				if (!userInboxs.containsKey(name))
+					userInboxs.put(name, new HashSet<Long>());
 
-			Log.info("MR: Passou do if");
-			userInboxs.get(name).add(newID);
-			allMessages.put(newID, msg);
-			Log.info("MR: Fez tudo do addmessageToInbox");
+				Log.info("MR: Passou do if");
+				userInboxs.get(name).add(newID);
+				allMessages.put(newID, msg);
+				Log.info("MR: Fez tudo do addmessageToInbox");
+			}
+
 		} catch (Exception e) {
 			Log.info("MR: Rebentou no addmessageToInbox exception");
 			e.printStackTrace();
