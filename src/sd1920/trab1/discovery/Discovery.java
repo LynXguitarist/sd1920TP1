@@ -103,7 +103,7 @@ public class Discovery {
 							if (domain.indexOf('.') != -1)
 								domain = domain.substring(0, domain.indexOf('.'));
 
-							System.out.printf("FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
+							System.out.printf("FROM %s (%s) : %s\n", domain,
 									pkt.getAddress().getHostAddress(), msg);
 
 							urls.put(domain, msgElems[1]);
