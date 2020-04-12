@@ -103,9 +103,6 @@ public class Discovery {
 							if (domain.indexOf('.') != -1)
 								domain = domain.substring(0, domain.indexOf('.'));
 
-							// announcements
-							System.out.printf(domain + "\t" + msgElems[1]);
-
 							urls.put(domain, msgElems[1]);
 						}
 					} catch (IOException e) {

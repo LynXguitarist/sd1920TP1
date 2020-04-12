@@ -51,9 +51,9 @@ public class MessageSoapServer {
 
 		server.start();// starts the server(regists the services)
 
-		Log.info(String.format("\n%s Server ready @ %s\n", SERVICE, serverURI));
+		Log.info(String.format("\n%s Server ready @ %s\n", InetAddress.getLocalHost().getCanonicalHostName(), serverURI));
 
-		Discovery discovery = new Discovery(DISCOVERY_ADDR, SERVICE, serverURI);
+		Discovery discovery = new Discovery(DISCOVERY_ADDR, InetAddress.getLocalHost().getCanonicalHostName(), serverURI);
 		discovery.start();
 	}
 
