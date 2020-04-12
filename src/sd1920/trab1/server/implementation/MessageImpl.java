@@ -257,10 +257,13 @@ public class MessageImpl implements MessageServiceSoap {
 			Log.info("Adding msg to " + name + " inbox.");
 			if (!userInboxs.containsKey(name))
 				userInboxs.put(name, new HashSet<Long>());
-
+			
+			Log.info("MI: Passou do if");
+			
 			userInboxs.get(name).add(newID);
 			allMessages.put(newID, msg);
 		} catch (Exception e) {
+			Log.info("MI: Rebentou np addmessageToInbox exception");
 			e.printStackTrace();
 		}
 
