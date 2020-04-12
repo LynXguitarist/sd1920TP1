@@ -253,19 +253,17 @@ public class MessageImpl implements MessageServiceSoap {
 	}
 
 	@Override
-	public void addMessageToInbox(long newID, String name, Message msg) {
+	public synchronized void addMessageToInbox(long newID, String name, Message msg) {
 		try {
-			synchronized (this) {
-				Log.info("Received message with ID " + newID + " from another domain.");
-				Log.info("Adding msg to " + name + " inbox.");
-				if (!userInboxs.containsKey(name))
-					userInboxs.put(name, new HashSet<Long>());
+			Log.info("Received message with ID " + newID + " from another domain.");
+			Log.info("Adding msg to " + name + " inbox.");
+			if (!userInboxs.containsKey(name))
+				userInboxs.put(name, new HashSet<Long>());
 
-				Log.info("MI: Passou do if");
+			Log.info("MI: Passou do if");
 
-				userInboxs.get(name).add(newID);
-				allMessages.put(newID, msg);
-			}
+			userInboxs.get(name).add(newID);
+			allMessages.put(newID, msg);
 
 		} catch (Exception e) {
 			Log.info("MI: Rebentou np addmessageToInbox exception");
@@ -295,7 +293,7 @@ public class MessageImpl implements MessageServiceSoap {
 		return userInboxs;
 	}
 
-	public static void sendMessage(String domain, long newID, String name, Message msg) {
+	public static synchronized void sendMessage(String domain, long newID, String name, Message msg) {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
