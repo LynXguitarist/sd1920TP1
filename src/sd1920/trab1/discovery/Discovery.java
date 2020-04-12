@@ -103,10 +103,9 @@ public class Discovery {
 							if (domain.indexOf('.') != -1)
 								domain = domain.substring(0, domain.indexOf('.'));
 
-							System.out.printf("FROM %s (%s) : %s\n", domain,
-									pkt.getAddress().getHostAddress(), msg);
+							// announcements
+							System.out.printf(domain + "\t" + msgElems[1]);
 
-							
 							urls.put(domain, msgElems[1]);
 						}
 					} catch (IOException e) {
@@ -117,7 +116,6 @@ public class Discovery {
 			e.printStackTrace();
 		}
 	}
-
 
 	public static String getUri(String domain) {
 		return urls.get(domain);
