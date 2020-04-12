@@ -86,7 +86,7 @@ public class MessageImpl implements MessageServiceSoap {
 				}
 
 				if (!sender.getDomain().equals(domain)) {
-					// Log.info("MR: Domain is..."+ domain);
+					Log.info("MI: Domain is..."+ domain);
 					sendMessage(domain, newID, recipient, msg);
 				} else {
 					if (!userInboxs.containsKey(recipient))
@@ -294,9 +294,12 @@ public class MessageImpl implements MessageServiceSoap {
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
+			Log.info("MI: Trying to connect to rest server: " + serverUrl);
 			// if service is different
-			if (serverUrl.contains("/rest"))
+			if (serverUrl.contains("/rest")) {
+				Log.info("MI: Connecting to rest server: " + serverUrl);
 				MessageResource.sendMessage(domain, newID, name, msg);
+			}
 
 			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);
 			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);
