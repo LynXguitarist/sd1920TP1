@@ -295,9 +295,8 @@ public class MessageImpl implements MessageServiceSoap {
 		try {
 			String serverUrl = Discovery.getUri(domain);
 			
-			// if service is different
+			// if service is different service
 			if (serverUrl.contains("/rest")) {
-				Log.info("MI: Connecting to rest server: " + serverUrl);
 				MessageResource.sendMessage(domain, newID, name, msg);
 				return;
 			}
@@ -331,8 +330,8 @@ public class MessageImpl implements MessageServiceSoap {
 			
 			// if service is different
 			if (serverUrl.contains("/rest")) {
-				Log.info("MI: Connecting to rest server: " + serverUrl);
 				MessageResource.sendDelete(domain, mid);
+				return;
 			}
 
 			QName QNAME = new QName(MessageServiceSoap.NAMESPACE, MessageServiceSoap.NAME);

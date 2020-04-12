@@ -278,13 +278,13 @@ public class MessageResource implements MessageService {
 	@Override
 	public void addMessageToInbox(long newID, String name, Message msg) {
 		try {
-				Log.info("Received message with ID " + newID + " from another domain.");
-				Log.info("Adding msg to " + name + "inbox.");
-				if (!userInboxs.containsKey(name))
-					userInboxs.put(name, new HashSet<Long>());
+			Log.info("Received message with ID " + newID + " from another domain.");
+			Log.info("Adding msg to " + name + "inbox.");
+			if (!userInboxs.containsKey(name))
+				userInboxs.put(name, new HashSet<Long>());
 
-				userInboxs.get(name).add(newID);
-				allMessages.put(newID, msg);
+			userInboxs.get(name).add(newID);
+			allMessages.put(newID, msg);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -315,9 +315,9 @@ public class MessageResource implements MessageService {
 
 		try {
 			String serverUrl = Discovery.getUri(domain);
+
 			// if service is different
 			if (serverUrl.contains("/soap")) {
-				Log.info("Conecting to soap server: " + serverUrl);
 				MessageImpl.sendMessage(domain, newID, name, msg);
 				return;
 			}
@@ -338,9 +338,12 @@ public class MessageResource implements MessageService {
 	public static void sendDelete(String domain, long mid) {
 		try {
 			String serverUrl = Discovery.getUri(domain);
+
 			// if service is different
-			if (serverUrl.contains("/soap"))
+			if (serverUrl.contains("/soap")) {
 				MessageImpl.sendDelete(domain, mid);
+				return;
+			}
 
 			String s_mid = String.valueOf(mid);
 
