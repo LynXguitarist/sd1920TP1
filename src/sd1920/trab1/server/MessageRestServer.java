@@ -25,21 +25,21 @@ public class MessageRestServer {
 	}
 
 	public static final int PORT = 8080;
-	public static final String SERVICE = "MessageService";
 
 	public static void main(String[] args) throws UnknownHostException {
 		String ip = InetAddress.getLocalHost().getHostAddress();
+		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
+		String serviceName = InetAddress.getLocalHost().getCanonicalHostName();
 
 		ResourceConfig config = new ResourceConfig();
 		config.register(MessageResource.class);
 		config.register(UserResource.class);
 
-		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 		JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
-		Log.info(String.format("%s Server ready @ %s\n", InetAddress.getLocalHost().getCanonicalHostName(), serverURI));
+		Log.info(String.format("%s Server ready @ %s\n", serviceName, serverURI));
 
-		Discovery discovery = new Discovery(DISCOVERY_ADDR, InetAddress.getLocalHost().getCanonicalHostName(), serverURI);
+		Discovery discovery = new Discovery(DISCOVERY_ADDR, serviceName, serverURI);
 		discovery.start();
 
 	}

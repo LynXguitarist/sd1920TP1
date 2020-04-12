@@ -26,13 +26,13 @@ public class MessageSoapServer {
 	}
 
 	public static final int PORT = 8080;
-	public static final String SERVICE = "MessageService";
 	public static final String SOAP_MESSAGES_PATH = "/soap/messages";
 	public static final String SOAP_USERS_PATH = "/soap/users";
 
 	public static void main(String[] args) throws Exception {
 		String ip = InetAddress.getLocalHost().getHostAddress();
 		String serverURI = String.format("http://%s:%s/soap", ip, PORT);
+		String serviceName = InetAddress.getLocalHost().getCanonicalHostName();
 
 		// Create an HTTP server, accepting requests at PORT (from all local interfaces)
 		HttpServer server = HttpServer.create(new InetSocketAddress(ip, PORT), 0);
@@ -51,9 +51,9 @@ public class MessageSoapServer {
 
 		server.start();// starts the server(regists the services)
 
-		Log.info(String.format("\n%s Server ready @ %s\n", InetAddress.getLocalHost().getCanonicalHostName(), serverURI));
+		Log.info(String.format("\n%s Server ready @ %s\n", serviceName, serverURI));
 
-		Discovery discovery = new Discovery(DISCOVERY_ADDR, InetAddress.getLocalHost().getCanonicalHostName(), serverURI);
+		Discovery discovery = new Discovery(DISCOVERY_ADDR, serviceName, serverURI);
 		discovery.start();
 	}
 
