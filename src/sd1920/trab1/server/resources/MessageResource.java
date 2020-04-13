@@ -1,5 +1,6 @@
 package sd1920.trab1.server.resources;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.inject.Singleton;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -31,6 +33,8 @@ import sd1920.trab1.server.utils.MessageUtills;
 
 @Singleton
 public class MessageResource implements MessageService {
+
+	private final static long RETRY_PERIOD = 1000;
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
 	protected static final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
@@ -313,47 +317,73 @@ public class MessageResource implements MessageService {
 
 	public static void sendMessage(String domain, long newID, String name, Message msg) {
 
-		try {
-			String serverUrl = Discovery.getUri(domain);
+		boolean success = false;
+		while (!success) {
+			try {
+				String serverUrl = Discovery.getUri(domain);
 
-			// if service is different
-			if (serverUrl.contains("/soap")) {
-				MessageImpl.sendMessage(domain, newID, name, msg);
-				return;
+				// if service is different
+				if (serverUrl.contains("/soap")) {
+					MessageImpl.sendMessage(domain, newID, name, msg);
+					return;
+				}
+
+				String mid = String.valueOf(newID);
+
+				ClientConfig config = new ClientConfig();
+				Client client = ClientBuilder.newClient(config);
+
+				WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+				target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)
+						.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
+
+				success = true;
+			} catch (ProcessingException pe) {
+				System.out.println("Timeout occured.");
+				pe.printStackTrace();
+				try {
+					Thread.sleep(RETRY_PERIOD);
+				} catch (InterruptedException e) {
+					// Nothing to do here
+				}
+				System.out.println("Retrying to execute request.");
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-
-			String mid = String.valueOf(newID);
-
-			ClientConfig config = new ClientConfig();
-			Client client = ClientBuilder.newClient(config);
-
-			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
-			target.path("/otherdomain").path(mid).path(name).request().accept(MediaType.APPLICATION_JSON)
-					.post(Entity.entity(msg, MediaType.APPLICATION_JSON));
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
 	public static void sendDelete(String domain, long mid) {
-		try {
-			String serverUrl = Discovery.getUri(domain);
 
-			// if service is different
-			if (serverUrl.contains("/soap")) {
-				MessageImpl.sendDelete(domain, mid);
-				return;
+		boolean success = false;
+		while (!success) {
+			try {
+				String serverUrl = Discovery.getUri(domain);
+
+				// if service is different
+				if (serverUrl.contains("/soap")) {
+					MessageImpl.sendDelete(domain, mid);
+					return;
+				}
+
+				String s_mid = String.valueOf(mid);
+
+				ClientConfig config = new ClientConfig();
+				Client client = ClientBuilder.newClient(config);
+
+				WebTarget target = client.target(serverUrl).path(MessageService.PATH);
+				target.path("/otherdomain").path(s_mid).request().accept(MediaType.APPLICATION_JSON).delete();
+				success = true;
+			} catch (ProcessingException pe) {
+				System.out.println("Timeout occured.");
+				pe.printStackTrace();
+				try {
+					Thread.sleep(RETRY_PERIOD);
+				} catch (InterruptedException e) {
+					// Nothing to do here
+				}
+				System.out.println("Retrying to execute request.");
 			}
-
-			String s_mid = String.valueOf(mid);
-
-			ClientConfig config = new ClientConfig();
-			Client client = ClientBuilder.newClient(config);
-
-			WebTarget target = client.target(serverUrl).path(MessageService.PATH);
-			target.path("/otherdomain").path(s_mid).request().accept(MediaType.APPLICATION_JSON).delete();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 

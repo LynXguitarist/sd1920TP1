@@ -1,5 +1,6 @@
 package sd1920.trab1.server.implementation;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,8 +15,11 @@ import java.util.logging.Logger;
 
 import javax.jws.WebService;
 import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceException;
+
+import com.sun.xml.ws.client.BindingProviderProperties;
 
 import sd1920.trab1.api.Message;
 import sd1920.trab1.api.User;
@@ -27,6 +31,10 @@ import sd1920.trab1.server.utils.MessageUtills;
 
 @WebService(serviceName = MessageServiceSoap.NAME, targetNamespace = MessageServiceSoap.NAMESPACE, endpointInterface = MessageServiceSoap.INTERFACE)
 public class MessageImpl implements MessageServiceSoap {
+
+	private final static long RETRY_PERIOD = 1000;
+	private final static int CONNECTION_TIMEOUT = 1000;
+	private final static int REPLY_TIMEOUT = 600;
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
 	protected static final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
@@ -86,7 +94,11 @@ public class MessageImpl implements MessageServiceSoap {
 				Log.info("MI: User: " + name + " in domain: " + domain);
 
 				if (!sender.getDomain().equals(domain))
-					sendMessage(domain, newID, name, msg);
+					try {
+						sendMessage(domain, newID, name, msg);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				else {
 					if (!userInboxs.containsKey(name))
 						userInboxs.put(name, new HashSet<Long>());
@@ -290,11 +302,12 @@ public class MessageImpl implements MessageServiceSoap {
 		return userInboxs;
 	}
 
-	public static void sendMessage(String domain, long newID, String name, Message msg) {
+	public static void sendMessage(String domain, long newID, String name, Message msg) throws IOException {
+
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
-			
+
 			// if service is different service
 			if (serverUrl.contains("/rest")) {
 				MessageResource.sendMessage(domain, newID, name, msg);
@@ -305,29 +318,40 @@ public class MessageImpl implements MessageServiceSoap {
 			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);
 
 			messages = service.getPort(sd1920.trab1.api.soap.MessageServiceSoap.class);
-			messages.addMessageToInbox(newID, name, msg);
 
 		} catch (WebServiceException wse) {
 			System.err.println("Could not contact server: " + wse.getMessage());
 			System.exit(1);// Terminates client
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		// Set Timeouts
-		/*
-		 * ((BindingProvider)
-		 * messages).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT,
-		 * CONNECTION_TIMEOUT); ((BindingProvider)
-		 * messages).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT,
-		 * REPLY_TIMEOUT);
-		 */
+
+		((BindingProvider) messages).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT,
+				CONNECTION_TIMEOUT);
+		((BindingProvider) messages).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
+
+		boolean success = false;
+		while (!success) {
+			try {
+				messages.addMessageToInbox(newID, name, msg);
+				success = true;
+			} catch (WebServiceException wse) {
+				System.out.println("Communication error.");
+				wse.printStackTrace();
+				try {
+					Thread.sleep(RETRY_PERIOD);
+				} catch (InterruptedException e) {
+					// Nothing to be done here
+				}
+				System.out.println("Retrying to execute request.");
+			}
+		}
 	}
 
 	public static void sendDelete(String domain, long mid) {
+
 		MessageServiceSoap messages = null;
 		try {
 			String serverUrl = Discovery.getUri(domain);
-			
+
 			// if service is different
 			if (serverUrl.contains("/rest")) {
 				MessageResource.sendDelete(domain, mid);
@@ -338,13 +362,33 @@ public class MessageImpl implements MessageServiceSoap {
 			Service service = Service.create(new URL(serverUrl + MESSAGES_WSDL), QNAME);
 
 			messages = service.getPort(sd1920.trab1.api.soap.MessageServiceSoap.class);
-			messages.deleteMessageInOtherServers(mid);
 
 		} catch (WebServiceException wse) {
 			System.err.println("Could not contact server: " + wse.getMessage());
 			System.exit(1);// Terminates client
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+
+		((BindingProvider) messages).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT,
+				CONNECTION_TIMEOUT);
+		((BindingProvider) messages).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
+
+		boolean success = false;
+		while (!success) {
+			try {
+				messages.deleteMessageInOtherServers(mid);
+				success = true;
+			} catch (WebServiceException wse) {
+				System.out.println("Communication error.");
+				wse.printStackTrace();
+				try {
+					Thread.sleep(RETRY_PERIOD);
+				} catch (InterruptedException e) {
+					// Nothing to be done here
+				}
+				System.out.println("Retrying to execute request.");
+			}
 		}
 	}
 
