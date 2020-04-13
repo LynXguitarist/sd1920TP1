@@ -108,8 +108,10 @@ public class MessageResource implements MessageService {
 						msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
 						// adds the fault message
 						
+						if (!userInboxs.containsKey(sender_name))
+							userInboxs.put(sender_name, new HashSet<Long>());
+						
 						userInboxs.get(sender_name).add(newID);
-						//allMessages.put(newID, msg);
 					}
 				}
 			}
