@@ -65,8 +65,7 @@ public class MessageResource implements MessageService {
 			throw new WebApplicationException(Status.FORBIDDEN);
 		} else if (msg.getSender() == null || msg.getDestination() == null || msg.getDestination().size() == 0) {
 			Log.info("Message was rejected due to lack of recepients.");
-			throw new WebApplicationException(Status.CONFLICT); // Check if message is valid, if not return HTTP //
-																// CONFLICT (409)
+			throw new WebApplicationException(Status.CONFLICT);
 		}
 
 		long newID = 0;
@@ -95,16 +94,25 @@ public class MessageResource implements MessageService {
 				String name = name_domain[0];
 				String domain = name_domain[1];
 
-				Log.info("MR: User: " + name + " in domain: " + domain);
-
 				if (!sender.getDomain().equals(domain)) {
 					Log.info("MR: Domain is..." + domain);
 					sendMessage(domain, newID, name, msg);// calls the server from the recipient domain
 				} else {
-					if (!userInboxs.containsKey(name))
-						userInboxs.put(name, new HashSet<Long>());
+					if (allusers.containsKey(name)) {// if user exists
+						if (!userInboxs.containsKey(name))
+							userInboxs.put(name, new HashSet<Long>());
 
-					userInboxs.get(name).add(newID);
+						userInboxs.get(name).add(newID);
+					} else {// else sends to sender inbox the message with dif subject
+						msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + name);
+						// adds the fault message
+						if (!userInboxs.containsKey(sender_name))
+							userInboxs.put(sender_name, new HashSet<Long>());
+
+						userInboxs.get(sender_name).add(newID);
+						break;// since is a fail, escapes the loop
+					}
+
 				}
 			}
 		}
@@ -339,9 +347,6 @@ public class MessageResource implements MessageService {
 
 				success = true;
 			} catch (ProcessingException pe) {
-				// Send faults
-				msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + name);
-				
 				System.out.println("Timeout occured.");
 				pe.printStackTrace();
 				try {

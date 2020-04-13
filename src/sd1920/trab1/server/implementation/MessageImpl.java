@@ -334,9 +334,6 @@ public class MessageImpl implements MessageServiceSoap {
 				messages.addMessageToInbox(newID, name, msg);
 				success = true;
 			} catch (WebServiceException wse) {
-				// Send faults
-				msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + name);
-				
 				System.out.println("Communication error.");
 				wse.printStackTrace();
 				try {
