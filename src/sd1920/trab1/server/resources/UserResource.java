@@ -1,8 +1,8 @@
 package sd1920.trab1.server.resources;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.inject.Singleton;
@@ -19,7 +19,7 @@ public class UserResource implements UserService {
 
 	private static final Map<String, User> allusers = new HashMap<>();
 	// Map consumed from MessageResource
-	private static Map<String, Set<Long>> userInbox = MessageResource.getUserInbox();
+	private static Map<String, List<Long>> userInbox = MessageResource.getUserInbox();
 
 	private static Logger Log = Logger.getLogger(MessageResource.class.getName());
 
