@@ -339,6 +339,9 @@ public class MessageResource implements MessageService {
 
 				success = true;
 			} catch (ProcessingException pe) {
+				// Send faults
+				msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + name);
+				
 				System.out.println("Timeout occured.");
 				pe.printStackTrace();
 				try {
