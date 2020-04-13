@@ -104,21 +104,10 @@ public class MessageResource implements MessageService {
 
 						userInboxs.get(name).add(newID);
 					} else {// else sends to sender inbox the message with dif subject
-
 						Log.info("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
 						msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
 						// adds the fault message
-						if (!userInboxs.containsKey(sender_name))
-							userInboxs.put(sender_name, new HashSet<Long>());
-
-						if (userInboxs.get(sender_name).contains(newID)) {
-							newID = Math.abs(randomNumberGenerator.nextLong());
-							while (allMessages.containsKey(newID)) {
-								newID = Math.abs(randomNumberGenerator.nextLong());
-							}
-						}
-
-						userInboxs.get(sender_name).add(newID);
+						addMessageToInbox(newID, sender_name, msg);
 					}
 				}
 			}
@@ -297,7 +286,6 @@ public class MessageResource implements MessageService {
 	@Override
 	public void addMessageToInbox(long newID, String name, Message msg) {
 		try {
-			Log.info("Received message with ID " + newID + " from another domain.");
 			Log.info("Adding msg to " + name + "inbox.");
 			if (!userInboxs.containsKey(name))
 				userInboxs.put(name, new HashSet<Long>());
