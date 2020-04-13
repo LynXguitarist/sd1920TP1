@@ -2,11 +2,14 @@ package sd1920.trab1.server.resources;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.inject.Singleton;
@@ -34,7 +37,7 @@ public class MessageResource implements MessageService {
 	private final static long RETRY_PERIOD = 1000;
 
 	private final Map<Long, Message> allMessages = new HashMap<Long, Message>();
-	protected static final Map<String, List<Long>> userInboxs = new HashMap<String, List<Long>>();
+	protected static final Map<String, Set<Long>> userInboxs = new HashMap<String, Set<Long>>();
 	// Map consumed from UserResource
 	private final Map<String, User> allusers = UserResource.getAllusers();
 
@@ -97,19 +100,16 @@ public class MessageResource implements MessageService {
 				} else {
 					if (allusers.containsKey(name)) {// if user exists
 						if (!userInboxs.containsKey(name))
-							userInboxs.put(name, new ArrayList<Long>());
+							userInboxs.put(name, new HashSet<Long>());
 
 						userInboxs.get(name).add(newID);
 					} else {// else sends to sender inbox the message with dif subject
-
 						Log.info("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
 						msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
-
-						if (!userInboxs.containsKey(sender_name))
-							userInboxs.put(sender_name, new ArrayList<Long>());
-
+						// adds the fault message
+						
 						userInboxs.get(sender_name).add(newID);
-						allMessages.put(newID, msg);
+						//allMessages.put(newID, msg);
 					}
 				}
 			}
@@ -142,7 +142,7 @@ public class MessageResource implements MessageService {
 		Message m = null;
 
 		synchronized (this) {
-			List<Long> mids = userInboxs.get(user);
+			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
 			for (Long l : mids) {
 				Log.info("Getting message with id " + l + ".");
 				if (l == mid) {
@@ -181,7 +181,7 @@ public class MessageResource implements MessageService {
 
 		Log.info("Collecting all messages in server for user " + user);
 		synchronized (this) {
-			List<Long> mids = userInboxs.get(user);
+			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
 			for (Long l : mids) {
 				Log.info("Adding message with id: " + l + ".");
 				messagesIds.add(l);
@@ -290,7 +290,7 @@ public class MessageResource implements MessageService {
 		try {
 			Log.info("Adding msg to " + name + "inbox.");
 			if (!userInboxs.containsKey(name))
-				userInboxs.put(name, new ArrayList<Long>());
+				userInboxs.put(name, new HashSet<Long>());
 
 			userInboxs.get(name).add(newID);
 			allMessages.put(newID, msg);
@@ -305,7 +305,7 @@ public class MessageResource implements MessageService {
 		try {
 			Log.info("Received request from another domain.");
 			Log.info("Deleting message with id: " + mid);
-			for (Entry<String, List<Long>> entry : userInboxs.entrySet())
+			for (Entry<String, Set<Long>> entry : userInboxs.entrySet())
 				entry.getValue().remove(mid);
 
 			allMessages.remove(mid);
@@ -316,7 +316,7 @@ public class MessageResource implements MessageService {
 
 	// --------------------------------Private_Methods------------------------------------//
 
-	protected static Map<String, List<Long>> getUserInbox() {
+	protected static Map<String, Set<Long>> getUserInbox() {
 		return userInboxs;
 	}
 
