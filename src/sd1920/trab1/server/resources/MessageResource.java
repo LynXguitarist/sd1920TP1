@@ -86,7 +86,6 @@ public class MessageResource implements MessageService {
 		Log.info("Created new message with id: " + newID);
 		MessageUtills.printMessage(allMessages.get(newID));
 
-		boolean failed = false;
 		synchronized (this) {
 			// Add the message (identifier) to the inbox of each recipient
 			for (String recipient : msg.getDestination()) {
@@ -104,20 +103,17 @@ public class MessageResource implements MessageService {
 							userInboxs.put(name, new HashSet<Long>());
 
 						userInboxs.get(name).add(newID);
-
-					} else {// changes the subject of the message
-						failed = true;
+					} else {// else sends to sender inbox the message with dif subject
 						msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
+						// adds the fault message
+						if (!userInboxs.containsKey(sender_name))
+							userInboxs.put(sender_name, new HashSet<Long>());
+
+						userInboxs.get(sender_name).add(newID);
 					}
+
 				}
 			}
-		}
-
-		if (failed) {// sends to sender inbox the message with failed subject
-			if (!userInboxs.containsKey(sender_name))
-				userInboxs.put(sender_name, new HashSet<Long>());
-
-			userInboxs.get(sender_name).add(newID);
 		}
 
 		// Return the id of the registered message to the client (in the body of a HTTP
