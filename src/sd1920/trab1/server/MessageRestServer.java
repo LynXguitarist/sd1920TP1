@@ -38,7 +38,7 @@ public class MessageRestServer {
 		JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
 		Log.info(String.format("%s Server ready @ %s\n", serviceName, serverURI));
-
+		
 		Discovery discovery = new Discovery(DISCOVERY_ADDR, serviceName, serverURI);
 		discovery.start();
 

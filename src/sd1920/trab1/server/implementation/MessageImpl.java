@@ -100,10 +100,20 @@ public class MessageImpl implements MessageServiceSoap {
 						e.printStackTrace();
 					}
 				else {
-					if (!userInboxs.containsKey(name))
-						userInboxs.put(name, new HashSet<Long>());
+					if (allusers.containsKey(name)) {// if user exists
+						if (!userInboxs.containsKey(name))
+							userInboxs.put(name, new HashSet<Long>());
 
-					userInboxs.get(name).add(newID);
+						userInboxs.get(name).add(newID);
+					} else {// else sends to sender inbox the message with dif subject
+						Log.info("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
+						msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
+						// adds the fault message
+						if (!userInboxs.containsKey(sender_name))
+							userInboxs.put(sender_name, new HashSet<Long>());
+
+						userInboxs.get(sender_name).add(newID);
+					}
 				}
 			}
 		}
@@ -134,7 +144,6 @@ public class MessageImpl implements MessageServiceSoap {
 		synchronized (this) {
 			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
 			for (Long l : mids) {
-				Log.info("Getting message with id " + l + ".");
 				if (l == mid) {
 					m = allMessages.get(l);
 					break;
@@ -169,7 +178,6 @@ public class MessageImpl implements MessageServiceSoap {
 		synchronized (this) {
 			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
 			for (Long l : mids) {
-				Log.info("Adding message with id: " + l + ".");
 				messagesIds.add(l);
 			}
 		}
@@ -231,6 +239,7 @@ public class MessageImpl implements MessageServiceSoap {
 			if (m_sender.contains(user)) {
 
 				Log.info("Deleting message with id: " + mid + " in domain: " + sender.getDomain());
+
 				// map that holds all users from the current domain and the domains
 				Map<String, String> domains = new HashMap<>(m.getDestination().size());
 
@@ -238,12 +247,9 @@ public class MessageImpl implements MessageServiceSoap {
 					String[] name_domain = recipient.split("@");
 					String name = name_domain[0];
 					String domain = name_domain[1];
-					Log.info("MR: Name before if: " + name + " in domain: " + domain);
 
-					Log.info("Same domain: " + domain.equals(sender.getDomain()));
 					// if domain doesnt exist or is the current domain
 					if (!domains.containsValue(domain) || domain.equals(sender.getDomain())) {
-						Log.info("MR: Adding to Map: " + name + " - " + domain);
 						domains.put(name, domain);
 					}
 				}
@@ -252,12 +258,10 @@ public class MessageImpl implements MessageServiceSoap {
 					String name = entry.getKey();
 					String domain = entry.getValue();
 
-					if (domain.equals(sender.getDomain())) {
-						Log.info("MR: Deleting from this domain, from userInbox: " + name + " message: " + mid);
+					if (domain.equals(sender.getDomain()))
 						userInboxs.get(name).remove(mid);
-					} else {
+					else
 						sendDelete(domain, mid);
-					}
 				}
 				allMessages.remove(mid);
 			}
@@ -302,6 +306,15 @@ public class MessageImpl implements MessageServiceSoap {
 		return userInboxs;
 	}
 
+	/**
+	 * forwards the message (postMessage) to a different domain
+	 * 
+	 * @param domain
+	 * @param newID
+	 * @param name
+	 * @param msg
+	 * @throws IOException
+	 */
 	public static void sendMessage(String domain, long newID, String name, Message msg) throws IOException {
 
 		MessageServiceSoap messages = null;
@@ -346,6 +359,13 @@ public class MessageImpl implements MessageServiceSoap {
 		}
 	}
 
+	/**
+	 * Sends a request to others servers to delete the message with mid from the
+	 * inboxs of the users that hold that message, and from the server itself
+	 * 
+	 * @param domain
+	 * @param mid
+	 */
 	public static void sendDelete(String domain, long mid) {
 
 		MessageServiceSoap messages = null;

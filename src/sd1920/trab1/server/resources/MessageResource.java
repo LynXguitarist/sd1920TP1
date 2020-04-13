@@ -107,10 +107,9 @@ public class MessageResource implements MessageService {
 						Log.info("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
 						msg.setSubject("FALHA NO ENVIO DE " + newID + " PARA " + recipient);
 						// adds the fault message
-						
 						if (!userInboxs.containsKey(sender_name))
 							userInboxs.put(sender_name, new HashSet<Long>());
-						
+
 						userInboxs.get(sender_name).add(newID);
 					}
 				}
@@ -140,7 +139,6 @@ public class MessageResource implements MessageService {
 		}
 
 		Log.info("Received request for message with id: " + mid + "in inbox " + user);
-		Log.info("Username = " + user + " - " + receiver.getName());
 		Message m = null;
 
 		synchronized (this) {
@@ -185,9 +183,7 @@ public class MessageResource implements MessageService {
 		synchronized (this) {
 			Set<Long> mids = userInboxs.getOrDefault(user, Collections.emptySet());
 			for (Long l : mids) {
-				Log.info("Adding message with id: " + l + ".");
 				messagesIds.add(l);
-
 			}
 		}
 		Log.info("Returning the list of messages.");
@@ -240,7 +236,6 @@ public class MessageResource implements MessageService {
 		}
 
 		Log.info("Received request to delete message with id: " + mid + ".");
-		Log.info("MR: User requesting delete = " + user);
 
 		Message m = null;
 		String m_sender = "";
@@ -262,12 +257,9 @@ public class MessageResource implements MessageService {
 					String[] name_domain = recipient.split("@");
 					String name = name_domain[0];
 					String domain = name_domain[1];
-					Log.info("MR: Name before if: " + name + " in domain: " + domain);
 
-					Log.info("Same domain: " + domain.equals(sender.getDomain()));
 					// if domain doesnt exist or is the current domain
 					if (!domains.containsValue(domain) || domain.equals(sender.getDomain())) {
-						Log.info("MR: Adding to Map: " + name + " - " + domain);
 						domains.put(name, domain);
 					}
 				}
@@ -276,10 +268,9 @@ public class MessageResource implements MessageService {
 					String name = entry.getKey();
 					String domain = entry.getValue();
 
-					if (domain.equals(sender.getDomain())) {
-						Log.info("MR: Deleting from this domain, from userInbox: " + name + " message: " + mid);
+					if (domain.equals(sender.getDomain()))
 						userInboxs.get(name).remove(mid);
-					} else
+					else
 						sendDelete(domain, mid);// calls other server
 				}
 				allMessages.remove(mid);
@@ -322,6 +313,14 @@ public class MessageResource implements MessageService {
 		return userInboxs;
 	}
 
+	/**
+	 * forwards the message (postMessage) to a different domain
+	 * 
+	 * @param domain
+	 * @param newID
+	 * @param name
+	 * @param msg
+	 */
 	public static void sendMessage(String domain, long newID, String name, Message msg) {
 
 		boolean success = false;
@@ -360,6 +359,13 @@ public class MessageResource implements MessageService {
 		}
 	}
 
+	/**
+	 * Sends a request to others servers to delete the message with mid from the
+	 * inboxs of the users that hold that message, and from the server itself
+	 * 
+	 * @param domain
+	 * @param mid
+	 */
 	public static void sendDelete(String domain, long mid) {
 
 		boolean success = false;

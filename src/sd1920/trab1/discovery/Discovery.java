@@ -99,10 +99,11 @@ public class Discovery {
 						String msg = new String(pkt.getData(), 0, pkt.getLength());
 						String[] msgElems = msg.split(DELIMITER);
 						if (msgElems.length == 2) { // periodic announcement
+
 							String domain = pkt.getAddress().getCanonicalHostName();
 							if (domain.indexOf('.') != -1)
 								domain = domain.substring(0, domain.indexOf('.'));
-
+							// adds in the map containing domain-uri
 							urls.put(domain, msgElems[1]);
 						}
 					} catch (IOException e) {
@@ -114,6 +115,12 @@ public class Discovery {
 		}
 	}
 
+	/**
+	 * return the uri for that domain
+	 * 
+	 * @param domain
+	 * @return uri
+	 */
 	public static String getUri(String domain) {
 		return urls.get(domain);
 	}
